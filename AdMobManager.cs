@@ -591,24 +591,24 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         //FirebaseManager.LogEvent(eventName);
     }
 
-    public void ShowBanner(AdPlacementType placementId, AdsManager.InterstitialDelegate onAdLoaded = null)
+    public void ShowBanner(AdPlacement.Type placementId, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
         string id = CustomMediation.GetAdmobID(placementId, AdMobConst.BANNER_ID);
         ShowBanner(id, AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth), 0f, onAdLoaded);
     }
 
-    public void ShowInterstitial(AdPlacementType placementId, AdsManager.InterstitialDelegate onAdClosed)
+    public void ShowInterstitial(AdPlacement.Type placementId, AdsManager.InterstitialDelegate onAdClosed)
     {
         ShowInterstitial(true, onAdClosed, cacheInterstitial, placementId.ToString());
     }
 
-    public void RequestInterstitialNoShow(AdPlacementType placementId, AdsManager.InterstitialDelegate onAdLoaded = null, bool showLoading = true)
+    public void RequestInterstitialNoShow(AdPlacement.Type placementId, AdsManager.InterstitialDelegate onAdLoaded = null, bool showLoading = true)
     {
         string id = CustomMediation.GetAdmobID(placementId, AdMobConst.INTERSTITIAL);
         RequestAdmobInterstitialNoShow(id, onAdLoaded, showLoading);
     }
 
-    public void Reward(AdPlacementType placementId, RewardDelegate onFinish)
+    public void Reward(AdPlacement.Type placementId, RewardDelegate onFinish)
     {
         string id = CustomMediation.GetAdmobID(placementId, AdMobConst.REWARD_ID);
         RewardAdmob(onFinish, id);

@@ -1,14 +1,14 @@
 {
     "name": "com.omnilatent.admobmanager",
     "displayName": "Omni Admob Ads Manager Module",
-    "version": "0.1",
+    "version": "1.0.0",
     "unity": "2018.1",
     "description": "Module for managing Admob",
     "keywords": ["ads"],
     "category": "Wrapper",
     "dependencies": {
         {
-            "com.omnilatent.adsmanager": "1.1.0"
+            "com.omnilatent.adsmanager": "2.0.0"
         }
     },
     "author": {
