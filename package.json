@@ -6,11 +6,6 @@
     "description": "Module for managing Admob",
     "keywords": ["ads"],
     "category": "Wrapper",
-    "dependencies": {
-        {
-            "com.omnilatent.adsmanager": "2.0.0"
-        }
-    },
     "author": {
         "name": "Trong",
         "email": "nguyentrong101094@gmail.com",
