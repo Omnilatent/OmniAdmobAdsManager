@@ -43,12 +43,14 @@ public partial class AdMobManager : MonoBehaviour
     private void HandleAdDidDismiss(object sender, EventArgs e)
     {
         adsInterstitialRewardedCallback?.Invoke(new RewardResult(RewardResult.Type.Canceled, "User has canceled"));
+        adsInterstitialRewardedCallback = null;
     }
 
     private void HandleAdFailedToPresent(object sender, AdErrorEventArgs e)
     {
         Debug.LogError("Rewarded interstitial ad has failed to present.");
         adsInterstitialRewardedCallback?.Invoke(new RewardResult(RewardResult.Type.LoadFailed, "Rewarded interstitial ad has failed to present."));
+        adsInterstitialRewardedCallback = null;
     }
 
     public void ShowRewardedInterstitialAd()
@@ -60,6 +62,7 @@ public partial class AdMobManager : MonoBehaviour
                 if (adsInterstitialRewardedCallback != null)
                 {
                     adsInterstitialRewardedCallback.Invoke(new RewardResult(RewardResult.Type.Finished));
+                    adsInterstitialRewardedCallback = null;
                 }
             });
         }
