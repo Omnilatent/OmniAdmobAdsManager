@@ -30,7 +30,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     Coroutine coTimeoutLoad;
 
     public delegate void BoolDelegate(bool reward);
-    public RewardDelegate adsVideoRewardedCallback;
+    public RewardDelegate adsVideoRewardedCallback; //For traditional Rewarded Video
 
     public delegate void InterstitialDelegate(bool isSuccess = false);
     public AdsManager.InterstitialDelegate interstitialFinishDelegate;
@@ -366,7 +366,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             interstitialLoadedDelegate = onAdLoaded;
             if (showLoading)
                 //Manager.LoadingAnimation(true);
-            coTimeoutLoad = StartCoroutine(CoTimeoutLoadInterstitial());
+                coTimeoutLoad = StartCoroutine(CoTimeoutLoadInterstitial());
         }
 #if UNITY_EDITOR
         OnInterstitialLoaded(false);

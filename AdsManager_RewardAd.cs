@@ -10,9 +10,8 @@ public partial class AdMobManager : MonoBehaviour
 
     public static void RewardAdmob(RewardDelegate onFinish, string rewardVideoAdId = AdMobConst.REWARD_ID)
     {
-#if UNITY_EDITOR
-        onFinish(new RewardResult(RewardResult.Type.Finished));
-#else
+//#if UNITY_EDITOR
+//        onFinish(new RewardResult(RewardResult.Type.Finished));
         if (AdsManager.HasNoInternet()) { onFinish(new RewardResult(RewardResult.Type.LoadFailed, "No internet connection.")); }
         else if (AdMobManager.instance != null)
         {
@@ -21,7 +20,6 @@ public partial class AdMobManager : MonoBehaviour
                 onFinish(rewarded);
             }, rewardVideoAdId);
         }
-#endif
     }
 
     public void ShowRewardBasedVideo(RewardDelegate onVideoCompleted = null, string rewardVideoAdId = AdMobConst.REWARD_ID)
