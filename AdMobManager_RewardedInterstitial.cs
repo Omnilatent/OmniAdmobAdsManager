@@ -4,12 +4,43 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public partial class AdMobManager : MonoBehaviour
+public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 {
     private RewardedInterstitialAd rewardedInterstitialAd;
     public RewardDelegate adsInterstitialRewardedCallback; //For Interstitial Rewarded
 
     public void RequestInterstitialRewardedNoShow(AdPlacement.Type placementType, RewardDelegate onFinish = null)
+    {
+        // Create an empty ad request.
+        AdRequest request = new AdRequest.Builder().Build();
+        // Load the rewarded ad with the request.
+        string id = CustomMediation.GetAdmobID(placementType, "");
+        if (rewardedInterstitialAd == null)
+        {
+            RewardedInterstitialAd.LoadAd(id, request, (RewardedInterstitialAd ad, string error) =>
+            {
+                if (error == null)
+                {
+                    rewardedInterstitialAd = ad;
+                    rewardedInterstitialAd.OnAdFailedToPresentFullScreenContent += HandleAdFailedToPresent;
+                    rewardedInterstitialAd.OnAdDidDismissFullScreenContent += HandleAdDidDismiss;
+                    rewardedInterstitialAd.OnPaidEvent += HandlePaidEvent;
+                    onFinish?.Invoke(new RewardResult(RewardResult.Type.Finished));
+                }
+                else
+                {
+                    onFinish?.Invoke(new RewardResult(RewardResult.Type.LoadFailed, error));
+                }
+            });
+        }
+        else
+        {
+            Debug.Log("Admob Reward Inter: An ads has already been loaded");
+            onFinish?.Invoke(new RewardResult(RewardResult.Type.Finished));
+        }
+    }
+
+    public void RequestInterstitialRewardedAndShow(AdPlacement.Type placementType, RewardDelegate onFinish = null)
     {
         // Create an empty ad request.
         AdRequest request = new AdRequest.Builder().Build();
@@ -26,7 +57,7 @@ public partial class AdMobManager : MonoBehaviour
                 rewardedInterstitialAd.OnAdDidDismissFullScreenContent += HandleAdDidDismiss;
                 rewardedInterstitialAd.OnPaidEvent += HandlePaidEvent;
 
-                ShowRewardedInterstitialAd();
+                ShowInterstitialRewarded(placementType, onFinish);
             }
             else
             {
@@ -42,7 +73,12 @@ public partial class AdMobManager : MonoBehaviour
 
     private void HandleAdDidDismiss(object sender, EventArgs e)
     {
-        adsInterstitialRewardedCallback?.Invoke(new RewardResult(RewardResult.Type.Canceled, "User has canceled"));
+        Debug.Log("Rewarded Interstitial Ads was dismissed");
+#if UNITY_EDITOR
+        adsInterstitialRewardedCallback?.Invoke(new RewardResult(RewardResult.Type.Finished, "Rewarded Interstitial Ads was dismissed"));
+#else
+        adsInterstitialRewardedCallback?.Invoke(new RewardResult(RewardResult.Type.Canceled, "Rewarded Interstitial Ads was dismissed"));
+#endif
         adsInterstitialRewardedCallback = null;
     }
 
@@ -53,18 +89,24 @@ public partial class AdMobManager : MonoBehaviour
         adsInterstitialRewardedCallback = null;
     }
 
-    public void ShowRewardedInterstitialAd()
+    public void ShowInterstitialRewarded(AdPlacement.Type placementType, RewardDelegate onAdClosed)
     {
         if (rewardedInterstitialAd != null)
         {
             rewardedInterstitialAd.Show((Reward reward) =>
             {
+                Debug.Log("Rewarded Interstitial show userEarnedReward callback");
                 if (adsInterstitialRewardedCallback != null)
                 {
                     adsInterstitialRewardedCallback.Invoke(new RewardResult(RewardResult.Type.Finished));
                     adsInterstitialRewardedCallback = null;
                 }
             });
+        }
+        else
+        {
+            Debug.LogError("Admob Rewarded Inter Ads: No loaded ads. An ads has to be loaded before being showed");
+            onAdClosed?.Invoke(new RewardResult(RewardResult.Type.LoadFailed, "Admob Rewarded Inter Ads: No loaded ads. An ads has to be loaded before being showed"));
         }
     }
 }
