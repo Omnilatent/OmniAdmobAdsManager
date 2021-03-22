@@ -73,40 +73,56 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     private void HandleAdDidDismiss(object sender, EventArgs e)
     {
-        Debug.Log("Rewarded Interstitial Ads was dismissed");
+        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        {
+            Debug.Log("Rewarded Interstitial Ads was dismissed");
 #if UNITY_EDITOR
-        adsInterstitialRewardedCallback?.Invoke(new RewardResult(RewardResult.Type.Finished, "Rewarded Interstitial Ads was dismissed"));
+            adsInterstitialRewardedCallback?.Invoke(new RewardResult(RewardResult.Type.Finished, "Rewarded Interstitial Ads was dismissed"));
 #else
-        adsInterstitialRewardedCallback?.Invoke(new RewardResult(RewardResult.Type.Canceled, "Rewarded Interstitial Ads was dismissed"));
+            adsInterstitialRewardedCallback?.Invoke(new RewardResult(RewardResult.Type.Canceled, "Rewarded Interstitial Ads was dismissed"));
 #endif
-        adsInterstitialRewardedCallback = null;
+            adsInterstitialRewardedCallback = null;
+        });
     }
 
     private void HandleAdFailedToPresent(object sender, AdErrorEventArgs e)
     {
-        Debug.LogError("Rewarded interstitial ad has failed to present.");
-        adsInterstitialRewardedCallback?.Invoke(new RewardResult(RewardResult.Type.LoadFailed, "Rewarded interstitial ad has failed to present."));
-        adsInterstitialRewardedCallback = null;
+        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        {
+            Debug.LogError("Rewarded interstitial ad has failed to present.");
+            adsInterstitialRewardedCallback?.Invoke(new RewardResult(RewardResult.Type.LoadFailed, "Rewarded interstitial ad has failed to present."));
+            adsInterstitialRewardedCallback = null;
+        });
     }
 
     public void ShowInterstitialRewarded(AdPlacement.Type placementType, RewardDelegate onAdClosed)
     {
         if (rewardedInterstitialAd != null)
         {
+            adsInterstitialRewardedCallback = onAdClosed;
             rewardedInterstitialAd.Show((Reward reward) =>
             {
-                Debug.Log("Rewarded Interstitial show userEarnedReward callback");
-                if (adsInterstitialRewardedCallback != null)
-                {
-                    adsInterstitialRewardedCallback.Invoke(new RewardResult(RewardResult.Type.Finished));
-                    adsInterstitialRewardedCallback = null;
-                }
+                OnUserEarnedReward(onAdClosed);
             });
+            rewardedInterstitialAd = null;
         }
         else
         {
             Debug.LogError("Admob Rewarded Inter Ads: No loaded ads. An ads has to be loaded before being showed");
             onAdClosed?.Invoke(new RewardResult(RewardResult.Type.LoadFailed, "Admob Rewarded Inter Ads: No loaded ads. An ads has to be loaded before being showed"));
         }
+    }
+
+    void OnUserEarnedReward(RewardDelegate onAdClosed)
+    {
+        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        {
+            Debug.Log("Rewarded Interstitial show userEarnedReward callback");
+            if (adsInterstitialRewardedCallback != null)
+            {
+                adsInterstitialRewardedCallback.Invoke(new RewardResult(RewardResult.Type.Finished));
+                adsInterstitialRewardedCallback = null;
+            }
+        });
     }
 }
