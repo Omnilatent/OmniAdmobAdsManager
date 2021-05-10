@@ -201,14 +201,14 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     }
 
     #region Banner
-    public void RequestBanner(string placementId, AdSize adSize)
+    public void RequestBanner(string placementId, AdSize adSize, AdPosition adPosition)
     {
         if (this.bannerView == null)
         {
             AdMobManager.bannerId = placementId;
             currentBannerSize = adSize;
             // Create a smart banner at the bottom of the screen.
-            this.bannerView = new BannerView(placementId, adSize, AdPosition.Bottom);
+            this.bannerView = new BannerView(placementId, adSize, adPosition);
 
             // Load a banner ad.
             this.bannerView.OnAdFailedToLoad += OnBannerAdsFailedToLoad;
@@ -241,7 +241,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         }
     }
 
-    public void ShowBanner(string placementId, AdSize adSize, float delay = 0f, AdsManager.InterstitialDelegate onAdLoaded = null)
+    public void ShowBanner(string placementId, AdSize adSize, AdPosition adPosition, float delay = 0f, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
         if (noAds != null && noAds())
         {
@@ -270,7 +270,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         {
             //.Log(string.Format("destroying current banner({0} {1}), showing new one", AdsManager.bannerId, currentBannerSize));
             DestroyBanner();
-            RequestBanner(placementId, adSize);
+            RequestBanner(placementId, adSize, adPosition);
         }
 
         isShowBanner = true;
@@ -593,8 +593,14 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     public void ShowBanner(AdPlacement.Type placementId, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
-        string id = CustomMediation.GetAdmobID(placementId, AdMobConst.BANNER_ID);
-        ShowBanner(id, AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth), 0f, onAdLoaded);
+        ShowBanner(placementId, Omnilatent.AdsMediation.BannerTransform.defaultValue, onAdLoaded);
+    }
+
+    public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform, AdsManager.InterstitialDelegate onAdLoaded = null)
+    {
+        string id = CustomMediation.GetAdmobID(placementType, AdMobConst.BANNER_ID);
+        AdPosition adPosition = (AdPosition)bannerTransform.adPosition;
+        ShowBanner(id, AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth), adPosition, 0f, onAdLoaded);
     }
 
     public void ShowInterstitial(AdPlacement.Type placementId, AdsManager.InterstitialDelegate onAdClosed)
