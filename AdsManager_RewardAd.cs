@@ -58,6 +58,7 @@ public partial class AdMobManager : MonoBehaviour
         UnityMainThreadDispatcher.Instance().Enqueue((Action)(() =>
         {
             rewardResult.type = RewardResult.Type.LoadFailed;
+            rewardResult.message = e.Message;
             CallVideoRewared();
             this.rewardBasedVideo.OnAdLoaded -= this.RewardBasedVideo_OnAdLoaded;
             this.rewardBasedVideo.OnAdFailedToLoad -= this.RewardBasedVideo_OnAdFailedToLoad;
