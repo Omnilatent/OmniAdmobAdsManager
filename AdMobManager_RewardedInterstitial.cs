@@ -17,7 +17,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         string id = CustomMediation.GetAdmobID(placementType, "");
         if (rewardedInterstitialAd == null)
         {
-            RewardedInterstitialAd.LoadAd(id, request, (RewardedInterstitialAd ad, string error) =>
+            RewardedInterstitialAd.LoadAd(id, request, (RewardedInterstitialAd ad, AdFailedToLoadEventArgs error) =>
             {
                 if (error == null)
                 {
@@ -29,7 +29,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
                 }
                 else
                 {
-                    onFinish?.Invoke(new RewardResult(RewardResult.Type.LoadFailed, error));
+                    onFinish?.Invoke(new RewardResult(RewardResult.Type.LoadFailed, error.LoadAdError.GetMessage()));
                 }
             });
         }
@@ -46,7 +46,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         AdRequest request = new AdRequest.Builder().Build();
         // Load the rewarded ad with the request.
         string id = CustomMediation.GetAdmobID(placementType, "");
-        RewardedInterstitialAd.LoadAd(id, request, (RewardedInterstitialAd ad, string error) =>
+        RewardedInterstitialAd.LoadAd(id, request, (RewardedInterstitialAd ad, AdFailedToLoadEventArgs error) =>
         {
             if (error == null)
             {
@@ -61,7 +61,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             }
             else
             {
-                onFinish?.Invoke(new RewardResult(RewardResult.Type.LoadFailed, error));
+                onFinish?.Invoke(new RewardResult(RewardResult.Type.LoadFailed, error.LoadAdError.GetMessage()));
             }
         });
     }

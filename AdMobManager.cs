@@ -57,7 +57,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     private BannerView bannerView;
 
-    private RewardBasedVideoAd rewardBasedVideo;
+    private RewardedAd rewardBasedVideo;
 
     private InterstitialAd interstitial;
 
@@ -164,10 +164,10 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         //MobileAds.Initialize(appId);
         MobileAds.Initialize((InitializationStatus status) => { Debug.Log($"Admob Init: {status}"); });
 
-        this.rewardBasedVideo = RewardBasedVideoAd.Instance;
+        /*this.rewardBasedVideo = RewardBasedVideoAd.Instance;
         this.rewardBasedVideo.OnAdClosed += HandleRewardedAdClosed;
         this.rewardBasedVideo.OnAdCompleted += HandleVideoCompleted;
-        this.rewardBasedVideo.OnAdRewarded += HandleUserEarnedReward;
+        this.rewardBasedVideo.OnAdRewarded += HandleUserEarnedReward;*/
 
         //if (Application.platform == RuntimePlatform.Android)
         //{
@@ -573,7 +573,8 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     {
         var delay = new WaitForSeconds(TIMEOUT_LOADAD);
         yield return delay;
-        HandleInterstitialFailedToLoadNoShow(null, new AdFailedToLoadEventArgs() { Message = "Timeout" });
+        LoadAdError loadAdError = new LoadAdError(new Omnilatent.AdMob.CustomLoadAdErrorClient("Self Timeout"));
+        HandleInterstitialFailedToLoadNoShow(null, new AdFailedToLoadEventArgs() { LoadAdError = loadAdError }); ;
     }
     #endregion
 
@@ -582,7 +583,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         var adFailed = args as AdFailedToLoadEventArgs;
         if (adFailed != null)
         {
-            print(string.Format("{0} load failed, message: {1}", prefix, adFailed.Message));
+            print(string.Format("{0} load failed, message: {1}", prefix, adFailed.LoadAdError.GetMessage()));
         }
     }
 

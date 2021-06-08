@@ -31,41 +31,49 @@ public partial class AdMobManager : MonoBehaviour
             this.adsVideoRewardedCallback = onVideoCompleted;
         }
 
+        //Start loading reward
         //this.reward = false;
         rewardResult = new RewardResult(RewardResult.Type.Canceled);
 
-        if (this.rewardBasedVideo.IsLoaded())
+        if (this.rewardBasedVideo != null && this.rewardBasedVideo.IsLoaded())
         {
             this.showingAds = true;
             this.rewardBasedVideo.Show();
             return;
         }
-        //Manager.LoadingAnimation(true);
 
-        this.rewardBasedVideo.OnAdLoaded += RewardBasedVideo_OnAdLoaded;
-        this.rewardBasedVideo.OnAdFailedToLoad += RewardBasedVideo_OnAdFailedToLoad;
         RequestRewardBasedVideo(rewardVideoAdId);
         StartCoroutine(CoTimeoutLoadReward());
     }
 
     void RequestRewardBasedVideo(string rewardVideoAdId)
     {
-        this.rewardBasedVideo.LoadAd(this.CreateAdRequest(), rewardVideoAdId);
+        this.rewardBasedVideo = new RewardedAd(rewardVideoAdId);
+        this.rewardBasedVideo.OnAdLoaded += RewardBasedVideo_OnAdLoaded;
+        this.rewardBasedVideo.OnAdFailedToLoad += RewardBasedVideo_OnAdFailedToLoad;
+        this.rewardBasedVideo.OnAdClosed += HandleRewardedAdClosed;
+        this.rewardBasedVideo.OnUserEarnedReward += HandleUserEarnedReward;
+        AdRequest request = new AdRequest.Builder().Build();
+        this.rewardBasedVideo.LoadAd(request);
     }
 
     void RewardBasedVideo_OnAdFailedToLoad(object sender, AdFailedToLoadEventArgs e)
     {
         UnityMainThreadDispatcher.Instance().Enqueue((Action)(() =>
         {
+            //Finish loading, return load failed
+
             rewardResult.type = RewardResult.Type.LoadFailed;
-            rewardResult.message = e.Message;
+            rewardResult.message = e.LoadAdError.GetMessage();
             CallVideoRewared();
             this.rewardBasedVideo.OnAdLoaded -= this.RewardBasedVideo_OnAdLoaded;
             this.rewardBasedVideo.OnAdFailedToLoad -= this.RewardBasedVideo_OnAdFailedToLoad;
-            //Manager.LoadingAnimation(false); //common AdsManager will handle turning off loading
-            LogEvent($"Admob_RewardLoadFail_{e.Message}");
-            //Manager.Add(PopupController.POPUP_SCENE_NAME, new PopupData(PopupType.OK, "No video available. Please try again later."));
-            Debug.Log($"Admob_RewardLoadFail_{e.Message}");
+            this.rewardBasedVideo.OnAdClosed -= HandleRewardedAdClosed;
+            this.rewardBasedVideo.OnUserEarnedReward -= HandleUserEarnedReward;
+            this.rewardBasedVideo.Destroy();
+            string logMessage = $"Admob_RewardLoadFail_{e.LoadAdError.GetMessage()}";
+            LogEvent(logMessage);
+            Debug.Log(logMessage);
         }));
     }
 
@@ -97,14 +105,6 @@ public partial class AdMobManager : MonoBehaviour
             //    Invoke("CallVideoRewared", 2f);
             //}
         });
-    }
-
-    public void DestroyRewardBasedVideo()
-    {
-        if (this.rewardBasedVideo.IsLoaded())
-        {
-            this.rewardBasedVideo.LoadAd(this.CreateAdRequest(), string.Empty);
-        }
     }
 
     void CallVideoRewared()
@@ -144,6 +144,7 @@ public partial class AdMobManager : MonoBehaviour
     {
         var delay = new WaitForSeconds(TIMEOUT_LOADAD);
         yield return delay;
-        RewardBasedVideo_OnAdFailedToLoad(null, new AdFailedToLoadEventArgs() { Message = "Timeout" });
+        LoadAdError loadAdError = new LoadAdError(new Omnilatent.AdMob.CustomLoadAdErrorClient("Self Timeout"));
+        RewardBasedVideo_OnAdFailedToLoad(null, new AdFailedToLoadEventArgs() { LoadAdError = loadAdError });
     }
 }
