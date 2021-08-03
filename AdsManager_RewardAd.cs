@@ -7,6 +7,7 @@ using UnityEngine;
 public partial class AdMobManager : MonoBehaviour
 {
     //RewardedAd rewardBasedVideo;
+    Coroutine timeoutLoadRewardCoroutine;
 
     public static void RewardAdmob(RewardDelegate onFinish, string rewardVideoAdId = AdMobConst.REWARD_ID)
     {
@@ -43,7 +44,8 @@ public partial class AdMobManager : MonoBehaviour
         }
 
         RequestRewardBasedVideo(rewardVideoAdId);
-        StartCoroutine(CoTimeoutLoadReward());
+        StopCoTimeoutLoadReward();
+        timeoutLoadRewardCoroutine = StartCoroutine(CoTimeoutLoadReward());
     }
 
     void RequestRewardBasedVideo(string rewardVideoAdId)
@@ -83,6 +85,7 @@ public partial class AdMobManager : MonoBehaviour
         {
             this.rewardBasedVideo.OnAdLoaded -= this.RewardBasedVideo_OnAdLoaded;
             this.rewardBasedVideo.OnAdFailedToLoad -= this.RewardBasedVideo_OnAdFailedToLoad;
+            StopCoTimeoutLoadReward();
             //Manager.LoadingAnimation(false);
 
             ShowRewardBasedVideo();
@@ -146,5 +149,14 @@ public partial class AdMobManager : MonoBehaviour
         yield return delay;
         LoadAdError loadAdError = new LoadAdError(new Omnilatent.AdMob.CustomLoadAdErrorClient("Self Timeout"));
         RewardBasedVideo_OnAdFailedToLoad(null, new AdFailedToLoadEventArgs() { LoadAdError = loadAdError });
+    }
+
+    void StopCoTimeoutLoadReward()
+    {
+        if (timeoutLoadRewardCoroutine != null)
+        {
+            StopCoroutine(timeoutLoadRewardCoroutine);
+            timeoutLoadRewardCoroutine = null;
+        }
     }
 }
