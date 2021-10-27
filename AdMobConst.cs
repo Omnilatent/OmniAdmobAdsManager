@@ -9,9 +9,10 @@ public class AdMobConst
     public const string REWARD_ID = "ca-app-pub-3940256099942544/5224354917";
     public const string REWARD_SKIP_ID = "ca-app-pub-3940256099942544/5224354917";
     public const string REWARD_GET_MORE_HINT_ID = "ca-app-pub-3940256099942544/5224354917";
-    public const string INTERSTITIAL = "ca-app-pub-3940256099942544/8691691433";
-    public const string INTERSTITIAL_SPLASH = "ca-app-pub-3940256099942544/8691691433";
-
+    public const string INTERSTITIAL = "ca-app-pub-3940256099942544/1033173712";
+    public const string INTERSTITIAL_SPLASH = "ca-app-pub-3940256099942544/1033173712";
+    public const string APP_OPEN_AD = "ca-app-pub-3940256099942544/3419835294";
+    public const string REWARDED_INTERSTITIAL = "ca-app-pub-3940256099942544/5354046379";
 #else
     public const string ADMOB_APP_ID = "ca-app-pub-7830655096475746~1117528011";
     public const string BANNER_ID = "ca-app-pub-7830655096475746/4370038003";
