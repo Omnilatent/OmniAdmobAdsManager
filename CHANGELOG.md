@@ -1,4 +1,10 @@
 ===
+1.3.0
+Require Google Admob 6.1.0 and above.
+New features:
+- Added support for App Open Ad format.
+
+===
 1.2.0
 Changes:
 - Support Google Admob 6.0.0: Update API from RewardBasedVideoAd to RewardedAd.
