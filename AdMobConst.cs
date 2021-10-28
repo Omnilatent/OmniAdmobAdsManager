@@ -21,7 +21,7 @@ public class AdMobConst
     public const string REWARD_GET_MORE_HINT_ID = "ca-app-pub-7830655096475746/3493856440";
     public const string INTERSTITIAL = "ca-app-pub-7830655096475746/5986711319";
     public const string INTERSTITIAL_SPLASH = "ca-app-pub-7830655096475746/4161429062";
-
+    public const string APP_OPEN_AD = "";
     //same ad IDs for cached load
     //public const string Interstitial_Continue = "ca-app-pub-7830655096475746/9238897593";
     //public const string Interstitial_Endgame = "ca-app-pub-7830655096475746/9238897593";
