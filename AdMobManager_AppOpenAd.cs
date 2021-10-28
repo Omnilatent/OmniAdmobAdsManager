@@ -60,30 +60,42 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     private void HandleOpenAdPaidEvent(object sender, AdValueEventArgs e)
     {
-        Debug.LogFormat("Received paid event. (currency: {0}, value: {1}",
+        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        {
+            Debug.LogFormat("Received paid event. (currency: {0}, value: {1}",
                 e.AdValue.CurrencyCode, e.AdValue.Value);
+        });
     }
 
     private void HandleAdDidDismissFullScreenContent(object sender, EventArgs args)
     {
-        // Set the ad to null to indicate that AppOpenAdManager no longer has another ad to show.
-        appOpenAd = null;
-        showingAds = false;
-        onAppOpenAdClosed?.Invoke(true);
-        onAppOpenAdClosed = null;
-        //LoadOpenAd();
+        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        {
+            // Set the ad to null to indicate that AppOpenAdManager no longer has another ad to show.
+            appOpenAd = null;
+            showingAds = false;
+            onAppOpenAdClosed?.Invoke(true);
+            onAppOpenAdClosed = null;
+            //LoadOpenAd();
+        });
     }
 
     private void HandleAdFailedToPresentFullScreenContent(object sender, AdErrorEventArgs args)
     {
-        Debug.LogFormat("Failed to present the ad (reason: {0})", args.AdError.GetMessage());
-        appOpenAd = null;
-        showingAds = false;
-        //LoadOpenAd();
+        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        {
+            Debug.LogFormat("Failed to present the ad (reason: {0})", args.AdError.GetMessage());
+            appOpenAd = null;
+            showingAds = false;
+            //LoadOpenAd();
+        });
     }
 
     private void HandleAdDidPresentFullScreenContent(object sender, EventArgs args)
     {
-        showingAds = true;
+        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        {
+            showingAds = true;
+        });
     }
 }
