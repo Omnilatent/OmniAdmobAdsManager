@@ -47,6 +47,8 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     {
         if (appOpenAd == null || showingAds)
         {
+            onAppOpenAdClosed?.Invoke(false);
+            onAppOpenAdClosed = null;
             return;
         }
 
@@ -87,6 +89,8 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             Debug.LogFormat("Failed to present the ad (reason: {0})", args.AdError.GetMessage());
             appOpenAd = null;
             showingAds = false;
+            onAppOpenAdClosed?.Invoke(false);
+            onAppOpenAdClosed = null;
             //LoadOpenAd();
         });
     }
