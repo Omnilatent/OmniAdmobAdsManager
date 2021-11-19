@@ -3,7 +3,7 @@
     "displayName": "Omni Admob Ads Manager Module",
     "version": "1.1.0",
     "unity": "2018.1",
-    "description": "Module for managing Admob",
+    "description": "Module for managing Admob\nRepo: https://github.com/Omnilatent/OmniAdmobAdsManager.git",
     "keywords": ["ads"],
     "category": "Wrapper",
     "author": {
