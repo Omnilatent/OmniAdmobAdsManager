@@ -51,12 +51,17 @@ public partial class AdMobManager : MonoBehaviour
     void RequestRewardBasedVideo(string rewardVideoAdId)
     {
         this.rewardBasedVideo = new RewardedAd(rewardVideoAdId);
+        AddCallbackToRewardVideo();
+        AdRequest request = new AdRequest.Builder().Build();
+        this.rewardBasedVideo.LoadAd(request);
+    }
+
+    void AddCallbackToRewardVideo()
+    {
         this.rewardBasedVideo.OnAdLoaded += RewardBasedVideo_OnAdLoaded;
         this.rewardBasedVideo.OnAdFailedToLoad += RewardBasedVideo_OnAdFailedToLoad;
         this.rewardBasedVideo.OnAdClosed += HandleRewardedAdClosed;
         this.rewardBasedVideo.OnUserEarnedReward += HandleUserEarnedReward;
-        AdRequest request = new AdRequest.Builder().Build();
-        this.rewardBasedVideo.LoadAd(request);
     }
 
     void RewardBasedVideo_OnAdFailedToLoad(object sender, AdFailedToLoadEventArgs e)
@@ -73,6 +78,7 @@ public partial class AdMobManager : MonoBehaviour
             this.rewardBasedVideo.OnAdClosed -= HandleRewardedAdClosed;
             this.rewardBasedVideo.OnUserEarnedReward -= HandleUserEarnedReward;
             this.rewardBasedVideo.Destroy();
+            this.rewardBasedVideo = null;
             string logMessage = $"Admob_RewardLoadFail_{e.LoadAdError.GetMessage()}";
             LogEvent(logMessage);
             Debug.Log(logMessage);
