@@ -89,28 +89,6 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     #region Static
 
-    public static bool RequestAndShowInterstitial(string newInterstitialId, AdsManager.InterstitialDelegate onAdClosed = null)
-    {
-        if (AdsManager.instance != null)
-        {
-            if (instance.noAds != null && instance.noAds())
-            {
-                onAdClosed();
-            }
-            else
-            {
-                if (onAdClosed != null)
-                {
-                    instance.interstitialFinishDelegate = onAdClosed;
-                }
-                instance.RequestInterstitial(newInterstitialId);
-                instance.ShowInterstitial();
-            }
-        }
-
-        return false;
-    }
-
     public static bool ShowInterstitialWithCallback(AdsManager.InterstitialDelegate onAdClosed = null, bool showLoading = true)
     {
         if (AdsManager.instance != null)
@@ -304,53 +282,6 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     #endregion
 
     #region Interstitial
-    public void RequestInterstitial()
-    {
-        if (noAds != null && noAds())
-            return;
-
-        if (this.interstitial != null && !this.interstitial.IsLoaded())
-        {
-            this.interstitial.OnAdClosed -= HandleInterstitialClosed;
-            this.interstitial.Destroy();
-            this.interstitial = null;
-        }
-
-        if (this.interstitial == null)
-        {
-            this.interstitial = new InterstitialAd(interstitialId);
-            this.interstitial.LoadAd(this.CreateAdRequest());
-            this.interstitial.OnAdClosed += HandleInterstitialClosed;
-        }
-    }
-
-    public void RequestInterstitial(string newInterstitialId)
-    {
-        if (noAds != null && noAds())
-        {
-            return;
-        }
-
-
-        if (this.interstitial != null && !this.interstitial.IsLoaded())
-        {
-            this.interstitial.OnAdClosed -= HandleInterstitialClosed;
-            this.interstitial.Destroy();
-            this.interstitial = null;
-        }
-
-        if (this.interstitial == null)
-        {
-            this.interstitial = new InterstitialAd(newInterstitialId);
-            this.interstitial.LoadAd(this.CreateAdRequest());
-            this.interstitial.OnAdClosed += HandleInterstitialClosed;
-            this.interstitial.OnAdFailedToLoad += HandleInterstitialFailedToLoad;
-            this.interstitial.OnAdLoaded += HandleInterstitialLoaded;
-
-            lastInterstitialRequestIsFailed = false;
-            //("added listener failed load");
-        }
-    }
 
     /// <param name="onAdLoaded">Function to call after the ads is loaded</param>
     public void RequestAdmobInterstitialNoShow(string newInterstitialId, AdsManager.InterstitialDelegate onAdLoaded = null, bool showLoading = true)
@@ -482,10 +413,10 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             DestroyInterstitial();
             OnInterstitialFinish(true);
 
-            if (Application.platform == RuntimePlatform.Android && cacheInterstitial)
+            /*if (Application.platform == RuntimePlatform.Android && cacheInterstitial)
             {
                 RequestInterstitial();
-            }
+            }*/
         });
     }
 
@@ -620,4 +551,79 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         string id = CustomMediation.GetAdmobID(placementId, AdMobConst.REWARD_ID);
         RewardAdmob(onFinish, id);
     }
+
+    #region Deprecated
+    [Obsolete]
+    public void RequestInterstitial()
+    {
+        if (noAds != null && noAds())
+            return;
+
+        if (this.interstitial != null && !this.interstitial.IsLoaded())
+        {
+            this.interstitial.OnAdClosed -= HandleInterstitialClosed;
+            this.interstitial.Destroy();
+            this.interstitial = null;
+        }
+
+        if (this.interstitial == null)
+        {
+            this.interstitial = new InterstitialAd(interstitialId);
+            this.interstitial.LoadAd(this.CreateAdRequest());
+            this.interstitial.OnAdClosed += HandleInterstitialClosed;
+        }
+    }
+
+    [Obsolete]
+    public void RequestInterstitial(string newInterstitialId)
+    {
+        if (noAds != null && noAds())
+        {
+            return;
+        }
+
+
+        if (this.interstitial != null && !this.interstitial.IsLoaded())
+        {
+            this.interstitial.OnAdClosed -= HandleInterstitialClosed;
+            this.interstitial.Destroy();
+            this.interstitial = null;
+        }
+
+        if (this.interstitial == null)
+        {
+            this.interstitial = new InterstitialAd(newInterstitialId);
+            this.interstitial.LoadAd(this.CreateAdRequest());
+            this.interstitial.OnAdClosed += HandleInterstitialClosed;
+            this.interstitial.OnAdFailedToLoad += HandleInterstitialFailedToLoad;
+            this.interstitial.OnAdLoaded += HandleInterstitialLoaded;
+
+            lastInterstitialRequestIsFailed = false;
+            //("added listener failed load");
+        }
+    }
+
+    [Obsolete]
+    public static bool RequestAndShowInterstitial(string newInterstitialId, AdsManager.InterstitialDelegate onAdClosed = null)
+    {
+        if (AdsManager.instance != null)
+        {
+            if (instance.noAds != null && instance.noAds())
+            {
+                onAdClosed();
+            }
+            else
+            {
+                if (onAdClosed != null)
+                {
+                    instance.interstitialFinishDelegate = onAdClosed;
+                }
+                instance.RequestInterstitial(newInterstitialId);
+                instance.ShowInterstitial();
+            }
+        }
+
+        return false;
+    }
+    #endregion
 }
