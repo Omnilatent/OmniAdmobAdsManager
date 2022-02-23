@@ -38,8 +38,8 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public AdsManager.InterstitialDelegate interstitialLoadedDelegate;
     public AdsManager.InterstitialDelegate bannerLoadedDelegate;
 
-    AdObject currentInterstitialAdObj;
-    AdObject loadingInterstitialAdObj;
+    AdObject currentInterstitialAdObj = new AdObject();
+    AdObject loadingInterstitialAdObj = new AdObject();
 
     public Action<AdPlacement.Type, EventArgs> onInterstitialLoaded;
     public Action<AdPlacement.Type, AdFailedToLoadEventArgs> onInterstitialFailedToLoad;
@@ -151,9 +151,6 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             var go = new GameObject("UnityMainThreadDispatcher");
             go.AddComponent<UnityMainThreadDispatcher>();
         }
-
-        currentInterstitialAdObj = new AdObject();
-        loadingInterstitialAdObj = new AdObject();
         //Debug.Log("OS: " + Application.platform + ". RAM: " + SystemInfo.systemMemorySize);
     }
 
