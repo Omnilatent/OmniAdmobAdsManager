@@ -66,7 +66,7 @@ public partial class AdMobManager : MonoBehaviour
 
     void RewardBasedVideo_OnAdFailedToLoad(object sender, AdFailedToLoadEventArgs e)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue((Action)(() =>
+        QueueMainThreadExecution((Action)(() =>
         {
             //Finish loading, return load failed
 
@@ -87,7 +87,7 @@ public partial class AdMobManager : MonoBehaviour
 
     void RewardBasedVideo_OnAdLoaded(object sender, EventArgs e)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue((Action)(() =>
+        QueueMainThreadExecution((Action)(() =>
         {
             this.rewardBasedVideo.OnAdLoaded -= this.RewardBasedVideo_OnAdLoaded;
             this.rewardBasedVideo.OnAdFailedToLoad -= this.RewardBasedVideo_OnAdFailedToLoad;
@@ -100,7 +100,7 @@ public partial class AdMobManager : MonoBehaviour
 
     void HandleRewardedAdClosed(object sender, EventArgs e)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             this.showingAds = false;
 
