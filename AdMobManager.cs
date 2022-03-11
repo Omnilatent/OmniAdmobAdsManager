@@ -394,7 +394,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     void HandleInterstitialClosed(object sender, EventArgs args)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             this.showingAds = false;
             DestroyInterstitial();
@@ -410,7 +410,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     void HandleInterstitialLoadedNoShow(object sender, EventArgs args)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             this.interstitial.OnAdLoaded -= HandleInterstitialLoaded;
             this.interstitial.OnAdLoaded -= HandleInterstitialLoadedNoShow;
@@ -446,7 +446,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     void HandleInterstitialFailedToLoad(object sender, AdFailedToLoadEventArgs args)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             this.interstitial.OnAdLoaded -= HandleInterstitialLoaded;
             this.interstitial.OnAdFailedToLoad -= HandleInterstitialFailedToLoad;
@@ -461,7 +461,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     void HandleInterstitialFailedToLoadNoShow(object sender, EventArgs args)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             this.interstitial.OnAdLoaded -= HandleInterstitialLoaded;
             this.interstitial.OnAdFailedToLoad -= HandleInterstitialFailedToLoadNoShow;
@@ -476,28 +476,28 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     void HandleInterstitialImpression(object sender, EventArgs args)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             onInterstitialImpression?.Invoke(currentInterstitialAdObj.placementType, args);
         });
     }
     void HandleInterstitialPaidEvent(object sender, AdValueEventArgs args)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             onInterstitialPaidEvent?.Invoke(currentInterstitialAdObj.placementType, args);
         });
     }
     void HandleInterstitialFailedToShow(object sender, AdErrorEventArgs args)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             onInterstitialFailedToShow?.Invoke(currentInterstitialAdObj.placementType, args);
         });
     }
     void HandleInterstitialOpening(object sender, EventArgs args)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             onInterstitialOpening?.Invoke(currentInterstitialAdObj.placementType, args);
         });
@@ -555,6 +555,18 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     {
         string id = CustomMediation.GetAdmobID(placementId, AdMobConst.REWARD_ID);
         RewardAdmob(onFinish, id);
+    }
+
+    static void QueueMainThreadExecution(Action action)
+    {
+#if UNITY_ANDROID
+        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        {
+            action.Invoke();
+        });
+#else 
+        action.Invoke();
+#endif
     }
 
     #region Deprecated
@@ -656,7 +668,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     [Obsolete]
     void HandleInterstitialLoaded(object sender, EventArgs args)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             this.interstitial.OnAdLoaded -= HandleInterstitialLoaded;
             this.interstitial.OnAdFailedToLoad -= HandleInterstitialFailedToLoad;

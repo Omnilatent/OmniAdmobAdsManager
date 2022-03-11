@@ -62,7 +62,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     private void HandleOpenAdPaidEvent(object sender, AdValueEventArgs e)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             Debug.LogFormat("Received paid event. (currency: {0}, value: {1}",
                 e.AdValue.CurrencyCode, e.AdValue.Value);
@@ -71,7 +71,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     private void HandleAdDidDismissFullScreenContent(object sender, EventArgs args)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             // Set the ad to null to indicate that AppOpenAdManager no longer has another ad to show.
             appOpenAd = null;
@@ -84,7 +84,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     private void HandleAdFailedToPresentFullScreenContent(object sender, AdErrorEventArgs args)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             Debug.LogFormat("Failed to present the ad (reason: {0})", args.AdError.GetMessage());
             appOpenAd = null;
@@ -97,7 +97,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     private void HandleAdDidPresentFullScreenContent(object sender, EventArgs args)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             showingAds = true;
         });

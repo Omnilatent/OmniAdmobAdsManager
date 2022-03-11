@@ -73,7 +73,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     private void HandleAdDidDismiss(object sender, EventArgs e)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             Debug.Log("Rewarded Interstitial Ads was dismissed");
 #if UNITY_EDITOR
@@ -87,7 +87,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     private void HandleAdFailedToPresent(object sender, AdErrorEventArgs e)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             Debug.LogError("Rewarded interstitial ad has failed to present.");
             adsInterstitialRewardedCallback?.Invoke(new RewardResult(RewardResult.Type.LoadFailed, "Rewarded interstitial ad has failed to present."));
@@ -115,7 +115,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     void OnUserEarnedReward(RewardDelegate onAdClosed)
     {
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
+        QueueMainThreadExecution(() =>
         {
             Debug.Log("Rewarded Interstitial show userEarnedReward callback");
             if (adsInterstitialRewardedCallback != null)
