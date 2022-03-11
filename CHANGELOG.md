@@ -1,4 +1,10 @@
 ===
+1.3.1
+Changes:
+- Move UnityMainThreadDispatcher from Omni AdsManager to Omni Admob Manager.
+- Do not queue main thread execution on iOS to avoid crash due to race condition.
+
+===
 1.3.0
 Require Google Admob 6.1.0 and above.
 New features:
