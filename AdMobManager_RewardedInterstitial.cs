@@ -14,7 +14,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         // Create an empty ad request.
         AdRequest request = new AdRequest.Builder().Build();
         // Load the rewarded ad with the request.
-        string id = CustomMediation.GetAdmobID(placementType, "");
+        string id = CustomMediation.GetAdmobID(placementType);
         if (rewardedInterstitialAd == null)
         {
             RewardedInterstitialAd.LoadAd(id, request, (RewardedInterstitialAd ad, AdFailedToLoadEventArgs error) =>
@@ -45,7 +45,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         // Create an empty ad request.
         AdRequest request = new AdRequest.Builder().Build();
         // Load the rewarded ad with the request.
-        string id = CustomMediation.GetAdmobID(placementType, "");
+        string id = CustomMediation.GetAdmobID(placementType);
         RewardedInterstitialAd.LoadAd(id, request, (RewardedInterstitialAd ad, AdFailedToLoadEventArgs error) =>
         {
             if (error == null)

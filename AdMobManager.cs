@@ -69,8 +69,6 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     private BannerView bannerView;
 
-    private RewardedAd rewardBasedVideo;
-
     private InterstitialAd interstitial;
 
     private RewardResult rewardResult;
@@ -533,7 +531,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
-        string id = CustomMediation.GetAdmobID(placementType, AdMobConst.BANNER_ID);
+        string id = CustomMediation.GetAdmobID(placementType);
         AdPosition adPosition = (AdPosition)bannerTransform.adPosition;
         ShowBanner(id, AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth), adPosition, 0f, onAdLoaded);
     }
@@ -546,18 +544,19 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     public void RequestInterstitialNoShow(AdPlacement.Type placementId, AdsManager.InterstitialDelegate onAdLoaded = null, bool showLoading = true)
     {
-        string id = CustomMediation.GetAdmobID(placementId, AdMobConst.INTERSTITIAL);
+        string id = CustomMediation.GetAdmobID(placementId);
         loadingInterstitialAdObj.placementType = placementId;
         RequestAdmobInterstitialNoShow(id, onAdLoaded, showLoading);
     }
 
     public void Reward(AdPlacement.Type placementId, RewardDelegate onFinish)
     {
-        string id = CustomMediation.GetAdmobID(placementId, AdMobConst.REWARD_ID);
-        RewardAdmob(onFinish, id);
+        string id = CustomMediation.GetAdmobID(placementId);
+        //RewardAdmob(onFinish, id);
+        ShowCachedRewardedAd(placementId, onFinish);
     }
 
-    static void QueueMainThreadExecution(Action action)
+    public static void QueueMainThreadExecution(Action action)
     {
 #if UNITY_ANDROID
         UnityMainThreadDispatcher.Instance().Enqueue(() =>

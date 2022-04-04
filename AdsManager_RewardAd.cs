@@ -7,14 +7,14 @@ using UnityEngine;
 
 public partial class AdMobManager : MonoBehaviour
 {
-    //RewardedAd rewardBasedVideo;
+    RewardedAd rewardBasedVideo;
     Coroutine timeoutLoadRewardCoroutine;
 
     public static void RewardAdmob(RewardDelegate onFinish, string rewardVideoAdId = AdMobConst.REWARD_ID)
     {
-#if UNITY_EDITOR
+/*#if UNITY_EDITOR
         onFinish(new RewardResult(RewardResult.Type.Finished));
-#else
+#else*/
         if (AdsManager.HasNoInternet()) { onFinish(new RewardResult(RewardResult.Type.LoadFailed, "No internet connection.")); }
         else if (AdMobManager.instance != null)
         {
@@ -23,7 +23,6 @@ public partial class AdMobManager : MonoBehaviour
                 onFinish(rewarded);
             }, rewardVideoAdId);
         }
-#endif
     }
 
     public void ShowRewardBasedVideo(RewardDelegate onVideoCompleted = null, string rewardVideoAdId = AdMobConst.REWARD_ID)
@@ -44,27 +43,29 @@ public partial class AdMobManager : MonoBehaviour
             return;
         }
 
-        RequestRewardBasedVideo(rewardVideoAdId);
+        this.rewardBasedVideo = RequestRewardBasedVideo(rewardVideoAdId);
         StopCoTimeoutLoadReward();
         timeoutLoadRewardCoroutine = StartCoroutine(CoTimeoutLoadReward());
     }
 
-    void RequestRewardBasedVideo(string rewardVideoAdId)
+    public RewardedAd RequestRewardBasedVideo(string rewardVideoAdId)
     {
-        this.rewardBasedVideo = new RewardedAd(rewardVideoAdId);
-        AddCallbackToRewardVideo();
+        var rewardBasedVideo = new RewardedAd(rewardVideoAdId);
+        AddCallbackToRewardVideo(rewardBasedVideo);
         AdRequest request = new AdRequest.Builder().Build();
-        this.rewardBasedVideo.LoadAd(request);
+        rewardBasedVideo.LoadAd(request);
+        return rewardBasedVideo;
     }
 
-    void AddCallbackToRewardVideo()
+    void AddCallbackToRewardVideo(RewardedAd rewardBasedVideo)
     {
-        this.rewardBasedVideo.OnAdLoaded += RewardBasedVideo_OnAdLoaded;
-        this.rewardBasedVideo.OnAdFailedToLoad += RewardBasedVideo_OnAdFailedToLoad;
-        this.rewardBasedVideo.OnAdClosed += HandleRewardedAdClosed;
-        this.rewardBasedVideo.OnUserEarnedReward += HandleUserEarnedReward;
+        rewardBasedVideo.OnAdLoaded += RewardBasedVideo_OnAdLoaded;
+        rewardBasedVideo.OnAdFailedToLoad += RewardBasedVideo_OnAdFailedToLoad;
+        rewardBasedVideo.OnAdClosed += HandleRewardedAdClosed;
+        rewardBasedVideo.OnUserEarnedReward += HandleUserEarnedReward;
     }
 
+    #region Callback
     void RewardBasedVideo_OnAdFailedToLoad(object sender, AdFailedToLoadEventArgs e)
     {
         QueueMainThreadExecution((Action)(() =>
@@ -149,6 +150,7 @@ public partial class AdMobManager : MonoBehaviour
         //this.reward = true;
         rewardResult.type = RewardResult.Type.Finished;
     }
+    #endregion
 
     IEnumerator CoTimeoutLoadReward()
     {
