@@ -1,4 +1,5 @@
 ﻿using GoogleMobileAds.Api;
+using Omnilatent.AdMob;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -163,6 +164,49 @@ public partial class AdMobManager : MonoBehaviour
         {
             StopCoroutine(timeoutLoadRewardCoroutine);
             timeoutLoadRewardCoroutine = null;
+        }
+    }
+
+    public void RequestRewardAd(AdPlacement.Type placementType, RewardDelegate onLoaded)
+    {
+        string id = CustomMediation.GetAdmobID(placementType);
+        RequestRewardBasedVideo(id);
+    }
+
+    public void ShowCachedRewardedAd(AdPlacement.Type placementType, RewardDelegate onFinish)
+    {
+        var cacheAdState = CacheAdmobAd.GetReadyRewardAd(placementType, out var rewardedAd);
+        if (cacheAdState == CacheAdmobAd.AdStatus.LoadSuccess)
+        {
+            RewardResult rewardResult = new RewardResult();
+
+            rewardedAd.OnUserEarnedReward += (sender, reward) =>
+            {
+                rewardResult.type = RewardResult.Type.Finished;
+            };
+            rewardedAd.OnAdClosed += (sender, e) =>
+            {
+                QueueMainThreadExecution(() =>
+                {
+                    this.showingAds = false;
+                    onFinish.Invoke(rewardResult);
+                    rewardedAd.Destroy();
+                    CacheAdmobAd.PreloadRewardAd(placementType);
+                });
+            };
+
+            this.showingAds = true;
+            rewardedAd.Show();
+        }
+        else if (cacheAdState == CacheAdmobAd.AdStatus.Loading)
+        {
+            RewardResult rewardResult = new RewardResult(RewardResult.Type.Loading, "Rewarded Ad is loading. Please wait.");
+            onFinish?.Invoke(rewardResult);
+        }
+        else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
+        {
+            RewardResult rewardResult = new RewardResult(RewardResult.Type.LoadFailed, "Ad loads failed. Please check internet connection.");
+            onFinish?.Invoke(rewardResult);
         }
     }
 }
