@@ -10,11 +10,20 @@ public partial class AdMobManager : MonoBehaviour
     RewardedAd rewardBasedVideo;
     Coroutine timeoutLoadRewardCoroutine;
 
+    public Action<AdPlacement.Type, EventArgs> onRewardAdLoaded;
+    public Action<AdPlacement.Type, EventArgs> onRewardAdOpening;
+    public Action<AdPlacement.Type, EventArgs> onRewardAdClosed;
+    public Action<AdPlacement.Type, AdErrorEventArgs> onRewardAdFailedToShow;
+    public Action<AdPlacement.Type, EventArgs> onRewardAdDidRecordImpression;
+    public Action<AdPlacement.Type, AdFailedToLoadEventArgs> onRewardAdFailedToLoad;
+    public Action<AdPlacement.Type, AdValueEventArgs> onRewardAdPaidEvent;
+    public Action<AdPlacement.Type, Reward> onRewardAdUserEarnReward;
+
     public static void RewardAdmob(RewardDelegate onFinish, string rewardVideoAdId = AdMobConst.REWARD_ID)
     {
-/*#if UNITY_EDITOR
-        onFinish(new RewardResult(RewardResult.Type.Finished));
-#else*/
+        /*#if UNITY_EDITOR
+                onFinish(new RewardResult(RewardResult.Type.Finished));
+        #else*/
         if (AdsManager.HasNoInternet()) { onFinish(new RewardResult(RewardResult.Type.LoadFailed, "No internet connection.")); }
         else if (AdMobManager.instance != null)
         {
@@ -185,6 +194,7 @@ public partial class AdMobManager : MonoBehaviour
             rewardedAd.OnUserEarnedReward += (sender, reward) =>
             {
                 rewardResult.type = RewardResult.Type.Finished;
+                onRewardAdUserEarnReward?.Invoke(placementType, reward);
             };
             rewardedAd.OnAdClosed += (sender, e) =>
             {
@@ -194,6 +204,7 @@ public partial class AdMobManager : MonoBehaviour
                     onFinish.Invoke(rewardResult);
                     rewardedAd.Destroy();
                     CacheAdmobAd.PreloadRewardAd(placementType);
+                    onRewardAdClosed?.Invoke(placementType, e);
                 });
             };
 

@@ -10,8 +10,7 @@ namespace Omnilatent.AdMob
     {
         private static Dictionary<AdPlacement.Type, List<CachedAdContainer>> rewardAdsCache;
         public static int maxCacheAdAmount = 1;
-
-        public static Action<AdPlacement.Type, AdFailedToLoadEventArgs> onRewardAdFailedToShow;
+        static bool sameAdTypeShareCache = true; //all reward ad will share cache
 
         public enum AdStatus { LoadFailed = 0, Finished = 1, Canceled = 2, Loading = 3, LoadSuccess = 4 }
 
@@ -38,7 +37,7 @@ namespace Omnilatent.AdMob
 
         public static void PreloadRewardAd(AdPlacement.Type placementType)
         {
-            List<CachedAdContainer> adQueue = GetCachedAdContainerList(placementType);
+            List<CachedAdContainer> adQueue = GetCachedAdContainerList(placementType, true);
             string id = CustomMediation.GetAdmobID(placementType);
             var newAd = new RewardedAd(id);
             CachedAdContainer cacheContainer = new CachedAdContainer(placementType, newAd);
@@ -54,13 +53,14 @@ namespace Omnilatent.AdMob
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
-                    var containerList = GetCachedAdContainerList(container.placementId);
+                    var containerList = GetCachedAdContainerList(container.placementId, false);
                     if (containerList.Count < maxCacheAdAmount)
                     {
                         PreloadRewardAd(container.placementId);
                     }
                     container.status = AdStatus.LoadSuccess;
                     Debug.Log($"Ad {newAd} loaded success");
+                    AdMobManager.instance.onRewardAdLoaded?.Invoke(container.placementId, args);
                 });
             };
             newAd.OnAdFailedToLoad += (object sender, AdFailedToLoadEventArgs e) =>
@@ -69,22 +69,45 @@ namespace Omnilatent.AdMob
                 {
                     container.status = AdStatus.LoadFailed;
                     container.GetRewardedAd().Destroy();
-                    GetCachedAdContainerList(container.placementId).Remove(container);
-                    onRewardAdFailedToShow?.Invoke(container.placementId, e);
-                    //TODO: log error to firebase
-                    /*RewardResult rewardResult = new RewardResult();
-                    rewardResult.type = RewardResult.Type.LoadFailed;
-                    rewardResult.message = e.LoadAdError.GetMessage();
-                    string logMessage = $"Admob_RewardLoadFail_{e.LoadAdError.GetMessage()}";
-                    Debug.Log(logMessage);*/
+                    GetCachedAdContainerList(container.placementId, false).Remove(container);
+                    AdMobManager.instance.onRewardAdFailedToLoad?.Invoke(container.placementId, e);
+                });
+            };
+            newAd.OnAdFailedToShow += (sender, e) =>
+            {
+                AdMobManager.QueueMainThreadExecution(() =>
+                {
+                    AdMobManager.instance.onRewardAdFailedToShow?.Invoke(container.placementId, e);
+                });
+            };
+            newAd.OnAdDidRecordImpression += (sender, e) =>
+            {
+                AdMobManager.QueueMainThreadExecution(() =>
+                {
+                    AdMobManager.instance.onRewardAdDidRecordImpression?.Invoke(container.placementId, e);
+                });
+            };
+            newAd.OnAdOpening += (sender, e) =>
+            {
+                AdMobManager.QueueMainThreadExecution(() =>
+                {
+                    AdMobManager.instance.onRewardAdOpening?.Invoke(container.placementId, e);
+                });
+            }; 
+            newAd.OnPaidEvent += (sender, e) =>
+            {
+                AdMobManager.QueueMainThreadExecution(() =>
+                {
+                    AdMobManager.instance.onRewardAdPaidEvent?.Invoke(container.placementId, e);
                 });
             };
         }
 
-        static List<CachedAdContainer> GetCachedAdContainerList(AdPlacement.Type placementType)
+        static List<CachedAdContainer> GetCachedAdContainerList(AdPlacement.Type placementType, bool initListIfNotExist)
         {
             List<CachedAdContainer> adQueue;
-            if (!rewardAdsCache.TryGetValue(placementType, out adQueue))
+            if (sameAdTypeShareCache) { placementType = AdPlacement.Reward; }
+            if (!rewardAdsCache.TryGetValue(placementType, out adQueue) && initListIfNotExist)
             {
                 rewardAdsCache.Add(placementType, new List<CachedAdContainer>());
                 adQueue = rewardAdsCache[placementType];
@@ -94,7 +117,8 @@ namespace Omnilatent.AdMob
 
         public static AdStatus GetReadyRewardAd(AdPlacement.Type placementType, out RewardedAd rewardedAd)
         {
-            if (!rewardAdsCache.TryGetValue(placementType, out var adQueue) || adQueue.Count == 0)
+            var adQueue = GetCachedAdContainerList(placementType, false);
+            if (adQueue == null || adQueue.Count == 0)
             {
                 Debug.Log($"CacheAdmod: Cached ad list of '{placementType}' not found. Initializing.");
                 PreloadRewardAd(placementType);
