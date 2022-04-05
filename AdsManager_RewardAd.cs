@@ -213,7 +213,7 @@ public partial class AdMobManager : MonoBehaviour
         }
         else if (cacheAdState == CacheAdmobAd.AdStatus.Loading)
         {
-            RewardResult rewardResult = new RewardResult(RewardResult.Type.Loading, "Rewarded Ad is loading. Please wait.");
+            RewardResult rewardResult = new RewardResult(RewardResult.Type.Loading, "Rewarded Ad is loading.");
             onFinish?.Invoke(rewardResult);
         }
         else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)

@@ -45,6 +45,7 @@ namespace Omnilatent.AdMob
             adQueue.Add(cacheContainer);
             AdRequest request = new AdRequest.Builder().Build();
             newAd.LoadAd(request);
+            Debug.Log($"Preload {placementType}");
         }
 
         static void AddCallbackToRewardVideo(RewardedAd newAd, CachedAdContainer container)
@@ -59,7 +60,7 @@ namespace Omnilatent.AdMob
                         PreloadRewardAd(container.placementId);
                     }
                     container.status = AdStatus.LoadSuccess;
-                    Debug.Log($"Ad {newAd} loaded success");
+                    Debug.Log($"Ad {container.placementId} loaded success");
                     AdMobManager.instance.onRewardAdLoaded?.Invoke(container.placementId, args);
                 });
             };
@@ -93,7 +94,7 @@ namespace Omnilatent.AdMob
                 {
                     AdMobManager.instance.onRewardAdOpening?.Invoke(container.placementId, e);
                 });
-            }; 
+            };
             newAd.OnPaidEvent += (sender, e) =>
             {
                 AdMobManager.QueueMainThreadExecution(() =>
