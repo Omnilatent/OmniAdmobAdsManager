@@ -54,7 +54,11 @@ public partial class AdMobManager : MonoBehaviour
 
         this.rewardBasedVideo = RequestRewardBasedVideo(rewardVideoAdId);
         StopCoTimeoutLoadReward();
-        timeoutLoadRewardCoroutine = StartCoroutine(CoTimeoutLoadReward());
+        timeoutLoadRewardCoroutine = StartCoroutine(CoTimeoutLoadReward(() =>
+        {
+            LoadAdError loadAdError = new LoadAdError(new Omnilatent.AdMob.CustomLoadAdErrorClient("Self Timeout"));
+            RewardBasedVideo_OnAdFailedToLoad(null, new AdFailedToLoadEventArgs() { LoadAdError = loadAdError });
+        }));
     }
 
     public RewardedAd RequestRewardBasedVideo(string rewardVideoAdId)
@@ -161,12 +165,11 @@ public partial class AdMobManager : MonoBehaviour
     }
     #endregion
 
-    IEnumerator CoTimeoutLoadReward()
+    IEnumerator CoTimeoutLoadReward(Action onTimeout)
     {
         var delay = new WaitForSeconds(TIMEOUT_LOADAD);
         yield return delay;
-        LoadAdError loadAdError = new LoadAdError(new Omnilatent.AdMob.CustomLoadAdErrorClient("Self Timeout"));
-        RewardBasedVideo_OnAdFailedToLoad(null, new AdFailedToLoadEventArgs() { LoadAdError = loadAdError });
+        onTimeout.Invoke();
     }
 
     void StopCoTimeoutLoadReward()
@@ -186,40 +189,86 @@ public partial class AdMobManager : MonoBehaviour
 
     public void ShowCachedRewardedAd(AdPlacement.Type placementType, RewardDelegate onFinish)
     {
-        var cacheAdState = CacheAdmobAd.GetReadyRewardAd(placementType, out var rewardedAd);
-        if (cacheAdState == CacheAdmobAd.AdStatus.LoadSuccess)
-        {
-            RewardResult rewardResult = new RewardResult();
+        StartCoroutine(CoWaitCachedRewardedAdLoad(placementType, onFinish));
+    }
 
-            rewardedAd.OnUserEarnedReward += (sender, reward) =>
+    IEnumerator CoWaitCachedRewardedAdLoad(AdPlacement.Type placementType, RewardDelegate onFinish)
+    {
+        CacheAdmobAd.AdStatus cacheAdState = CacheAdmobAd.AdStatus.Loading;
+        RewardedAd rewardedAd = null;
+        bool timedOut = false;
+
+        StopCoTimeoutLoadReward();
+        timeoutLoadRewardCoroutine = StartCoroutine(CoTimeoutLoadReward(() =>
+        {
+            timedOut = true;
+            cacheAdState = CacheAdmobAd.AdStatus.LoadFailed;
+        }));
+
+        //Continuously check for ready cached ad. If timed out before any ads is ready then break out of checking
+        bool loggedLoading = false;
+        WaitForSecondsRealtime checkInterval = new WaitForSecondsRealtime(0.1f);
+        do
+        {
+            cacheAdState = CacheAdmobAd.GetReadyRewardAd(placementType, out rewardedAd);
+            if (cacheAdState == CacheAdmobAd.AdStatus.LoadSuccess)
             {
-                rewardResult.type = RewardResult.Type.Finished;
-                onRewardAdUserEarnReward?.Invoke(placementType, reward);
-            };
-            rewardedAd.OnAdClosed += (sender, e) =>
-            {
-                QueueMainThreadExecution(() =>
+                RewardResult rewardResult = new RewardResult(RewardResult.Type.Canceled);
+
+                rewardedAd.OnUserEarnedReward += (sender, reward) =>
                 {
-                    this.showingAds = false;
-                    onFinish.Invoke(rewardResult);
-                    rewardedAd.Destroy();
-                    CacheAdmobAd.PreloadRewardAd(placementType);
-                    onRewardAdClosed?.Invoke(placementType, e);
-                });
-            };
+                    rewardResult.type = RewardResult.Type.Finished;
+                    onRewardAdUserEarnReward?.Invoke(placementType, reward);
+                };
+                rewardedAd.OnAdClosed += (sender, e) =>
+                {
+                    QueueMainThreadExecution(() =>
+                    {
+                        this.showingAds = false;
+                        onFinish.Invoke(rewardResult);
+                        rewardedAd.Destroy();
+                        CacheAdmobAd.CheckAdQueueSizeAndPreload(placementType);
+                        onRewardAdClosed?.Invoke(placementType, e);
+                    });
+                };
 
-            this.showingAds = true;
-            rewardedAd.Show();
+                this.showingAds = true;
+                rewardedAd.Show();
+            }
+            else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
+            {
+                break;
+            }
+            else
+            {
+                if(!loggedLoading)
+                {
+                    Debug.Log($"No ad of '{placementType}' is ready yet. Wating.");
+                    loggedLoading = true;
+                }
+                yield return checkInterval; //TODO: add option to break in case game want to continue instead of waiting for ad ready
+            }
         }
-        else if (cacheAdState == CacheAdmobAd.AdStatus.Loading)
+        while (cacheAdState == CacheAdmobAd.AdStatus.Loading);
+
+        //No rewardedAd is ready, show message
+        if (cacheAdState != CacheAdmobAd.AdStatus.LoadSuccess)
         {
-            RewardResult rewardResult = new RewardResult(RewardResult.Type.Loading, "Rewarded Ad is loading.");
+            RewardResult rewardResult;
+            if (timedOut)
+            {
+                rewardResult = new RewardResult(RewardResult.Type.LoadFailed, "Rewarded Ad self timeout.");
+            }
+            else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
+            {
+                rewardResult = new RewardResult(RewardResult.Type.LoadFailed, "Ad loads failed. Please check internet connection.");
+            }
+            else
+            {
+                rewardResult = new RewardResult(RewardResult.Type.Loading, "Rewarded Ad is loading.");
+            }
             onFinish?.Invoke(rewardResult);
         }
-        else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
-        {
-            RewardResult rewardResult = new RewardResult(RewardResult.Type.LoadFailed, "Ad loads failed. Please check internet connection.");
-            onFinish?.Invoke(rewardResult);
-        }
+        //.Log($"Wait ad load cacheAdState: {cacheAdState}");
     }
 }

@@ -45,7 +45,7 @@ namespace Omnilatent.AdMob
             adQueue.Add(cacheContainer);
             AdRequest request = new AdRequest.Builder().Build();
             newAd.LoadAd(request);
-            Debug.Log($"Preload {placementType}");
+            Debug.Log($"Preload {placementType}. adQueue size {adQueue.Count}");
         }
 
         static void AddCallbackToRewardVideo(RewardedAd newAd, CachedAdContainer container)
@@ -54,11 +54,7 @@ namespace Omnilatent.AdMob
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
-                    var containerList = GetCachedAdContainerList(container.placementId, false);
-                    if (containerList.Count < maxCacheAdAmount)
-                    {
-                        PreloadRewardAd(container.placementId);
-                    }
+                    CheckAdQueueSizeAndPreload(container.placementId);
                     container.status = AdStatus.LoadSuccess;
                     Debug.Log($"Ad {container.placementId} loaded success");
                     AdMobManager.instance.onRewardAdLoaded?.Invoke(container.placementId, args);
@@ -104,6 +100,15 @@ namespace Omnilatent.AdMob
             };
         }
 
+        public static void CheckAdQueueSizeAndPreload(AdPlacement.Type placementId)
+        {
+            var containerList = GetCachedAdContainerList(placementId, false);
+            if (containerList.Count < maxCacheAdAmount)
+            {
+                PreloadRewardAd(placementId);
+            }
+        }
+
         static List<CachedAdContainer> GetCachedAdContainerList(AdPlacement.Type placementType, bool initListIfNotExist)
         {
             List<CachedAdContainer> adQueue;
@@ -143,7 +148,7 @@ namespace Omnilatent.AdMob
                     }
                 }
 
-                Debug.Log($"CacheAdmod: No ad of '{placementType}' is ready yet.");
+                //.Log($"CacheAdmod: No ad of '{placementType}' is ready yet.");
                 rewardedAd = null;
                 return AdStatus.Loading;
             }
