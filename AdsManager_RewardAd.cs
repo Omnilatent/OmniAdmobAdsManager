@@ -246,12 +246,13 @@ public partial class AdMobManager : MonoBehaviour
 
                 this.showingAds = true;
                 rewardedAd.Show();
+                break;
             }
             else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
             {
                 break;
             }
-            else
+            else if (!timedOut)
             {
                 if (!loggedLoading)
                 {
@@ -261,7 +262,7 @@ public partial class AdMobManager : MonoBehaviour
                 yield return checkInterval; //TODO: add option to break in case game want to continue instead of waiting for ad ready
             }
         }
-        while (cacheAdState == CacheAdmobAd.AdStatus.Loading);
+        while (cacheAdState == CacheAdmobAd.AdStatus.Loading && !timedOut);
 
         //No rewardedAd is ready, show message
         if (cacheAdState != CacheAdmobAd.AdStatus.LoadSuccess)
@@ -269,7 +270,14 @@ public partial class AdMobManager : MonoBehaviour
             RewardResult rewardResult;
             if (timedOut)
             {
-                rewardResult = new RewardResult(RewardResult.Type.LoadFailed, "Rewarded Ad self timeout.");
+                if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
+                {
+                    rewardResult = new RewardResult(RewardResult.Type.LoadFailed, "Rewarded Ad self timeout.");
+                }
+                else
+                {
+                    rewardResult = new RewardResult(RewardResult.Type.Loading, "Loading Reward Ad.");
+                }
             }
             else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
             {
