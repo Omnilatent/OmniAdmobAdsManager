@@ -16,6 +16,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 {
     public const float TIME_BETWEEN_ADS = 10f;
     public static float TIMEOUT_LOADAD = 12f;
+    public static float TIMEOUT_LOADREWARDAD = 12f;
     public static string appId;
     public static string bannerId;
     public AdSize currentBannerSize = AdSize.Banner;

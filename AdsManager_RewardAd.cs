@@ -154,21 +154,30 @@ public partial class AdMobManager : MonoBehaviour
 
     void HandleVideoCompleted(object sender, EventArgs args)
     {
-        //this.reward = true;
-        rewardResult.type = RewardResult.Type.Finished;
+        QueueMainThreadExecution(() =>
+        {
+            //this.reward = true;
+            rewardResult.type = RewardResult.Type.Finished;
+        });
     }
 
     void HandleUserEarnedReward(object sender, Reward e)
     {
-        //this.reward = true;
-        rewardResult.type = RewardResult.Type.Finished;
+        QueueMainThreadExecution(() =>
+        {
+            //this.reward = true;
+            rewardResult.type = RewardResult.Type.Finished;
+        });
     }
     #endregion
 
     IEnumerator CoTimeoutLoadReward(Action onTimeout)
     {
-        var delay = new WaitForSeconds(TIMEOUT_LOADAD);
-        yield return delay;
+        if (TIMEOUT_LOADREWARDAD > 0f)
+        {
+            var delay = new WaitForSeconds(TIMEOUT_LOADREWARDAD);
+            yield return delay;
+        }
         onTimeout.Invoke();
     }
 
@@ -217,8 +226,11 @@ public partial class AdMobManager : MonoBehaviour
 
                 rewardedAd.OnUserEarnedReward += (sender, reward) =>
                 {
-                    rewardResult.type = RewardResult.Type.Finished;
-                    onRewardAdUserEarnReward?.Invoke(placementType, reward);
+                    QueueMainThreadExecution(() =>
+                    {
+                        rewardResult.type = RewardResult.Type.Finished;
+                        onRewardAdUserEarnReward?.Invoke(placementType, reward);
+                    });
                 };
                 rewardedAd.OnAdClosed += (sender, e) =>
                 {
@@ -241,7 +253,7 @@ public partial class AdMobManager : MonoBehaviour
             }
             else
             {
-                if(!loggedLoading)
+                if (!loggedLoading)
                 {
                     Debug.Log($"No ad of '{placementType}' is ready yet. Wating.");
                     loggedLoading = true;
