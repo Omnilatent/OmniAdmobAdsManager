@@ -19,6 +19,8 @@ public partial class AdMobManager : MonoBehaviour
     public Action<AdPlacement.Type, AdValueEventArgs> onRewardAdPaidEvent;
     public Action<AdPlacement.Type, Reward> onRewardAdUserEarnReward;
 
+    const string loadingRewardAdMsg = "Loading Reward Ad.";
+
     public static void RewardAdmob(RewardDelegate onFinish, string rewardVideoAdId = AdMobConst.REWARD_ID)
     {
         /*#if UNITY_EDITOR
@@ -276,7 +278,7 @@ public partial class AdMobManager : MonoBehaviour
                 }
                 else
                 {
-                    rewardResult = new RewardResult(RewardResult.Type.Loading, "Loading Reward Ad.");
+                    rewardResult = new RewardResult(RewardResult.Type.Loading, loadingRewardAdMsg);
                 }
             }
             else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
@@ -285,7 +287,7 @@ public partial class AdMobManager : MonoBehaviour
             }
             else
             {
-                rewardResult = new RewardResult(RewardResult.Type.Loading, "Rewarded Ad is loading.");
+                rewardResult = new RewardResult(RewardResult.Type.Loading, loadingRewardAdMsg);
             }
             onFinish?.Invoke(rewardResult);
         }
