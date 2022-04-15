@@ -226,6 +226,9 @@ public partial class AdMobManager : MonoBehaviour
             {
                 RewardResult rewardResult = new RewardResult(RewardResult.Type.Canceled);
 
+#if UNITY_EDITOR
+                rewardResult.type = RewardResult.Type.Finished;
+#endif
                 rewardedAd.OnUserEarnedReward += (sender, reward) =>
                 {
                     QueueMainThreadExecution(() =>
