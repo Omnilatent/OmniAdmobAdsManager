@@ -9,8 +9,18 @@ namespace Omnilatent.AdMob
     public static class CacheAdmobAd
     {
         private static Dictionary<AdPlacement.Type, List<CachedAdContainer>> rewardAdsCache;
-        public static int maxCacheAdAmount = 1;
-        static bool sameAdTypeShareCache = true; //all reward ad will share cache
+
+        /// <summary>
+        /// Max amount of ad to be preloaded per placement
+        /// </summary>
+        public static int MaxCacheAdAmount { get => maxCacheAdAmount; set => maxCacheAdAmount = value; }
+        static int maxCacheAdAmount = 1;
+
+        /// <summary>
+        /// If true, all ad placements of same type will share cache with each other. E.g. all rewarded ads will share cache.
+        /// </summary>
+        public static bool SameAdTypeShareCache { get => sameAdTypeShareCache; set => sameAdTypeShareCache = value; }
+        static bool sameAdTypeShareCache = true;
 
         public enum AdStatus { LoadFailed = 0, Finished = 1, Canceled = 2, Loading = 3, LoadSuccess = 4 }
 
