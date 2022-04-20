@@ -181,6 +181,7 @@ public partial class AdMobManager : MonoBehaviour
             yield return delay;
         }
         onTimeout.Invoke();
+        timeoutLoadRewardCoroutine = null;
     }
 
     void StopCoTimeoutLoadReward()
@@ -268,6 +269,8 @@ public partial class AdMobManager : MonoBehaviour
             }
         }
         while (cacheAdState == CacheAdmobAd.AdStatus.Loading && !timedOut);
+
+        StopCoTimeoutLoadReward();
 
         //No rewardedAd is ready, show message
         if (cacheAdState != CacheAdmobAd.AdStatus.LoadSuccess)
