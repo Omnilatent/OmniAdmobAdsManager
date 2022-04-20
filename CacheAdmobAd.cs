@@ -66,7 +66,8 @@ namespace Omnilatent.AdMob
                 {
                     container.status = AdStatus.LoadFailed;
                     container.GetRewardedAd().Destroy();
-                    GetCachedAdContainerList(container.placementId, false).Remove(container);
+                    //GetCachedAdContainerList(container.placementId, false).Remove(container);
+                    Debug.Log($"Ad {container.placementId} loaded failed");
                     AdMobManager.instance.onRewardAdFailedToLoad?.Invoke(container.placementId, e);
                 });
             };
@@ -138,6 +139,7 @@ namespace Omnilatent.AdMob
             }
             else
             {
+                int failedCount = 0, adQueueSizeBeforeCheck = adQueue.Count;
                 for (int i = adQueue.Count - 1; i >= 0; i--)
                 {
                     if (adQueue[i].GetRewardedAd().IsLoaded())
@@ -146,6 +148,18 @@ namespace Omnilatent.AdMob
                         adQueue.RemoveAt(i);
                         return AdStatus.LoadSuccess;
                     }
+                    else if (adQueue[i].status == AdStatus.LoadFailed)
+                    {
+                        adQueue.RemoveAt(i);
+                        failedCount++;
+                    }
+                }
+
+                if (adQueueSizeBeforeCheck == failedCount)
+                {
+                    Debug.Log("All ads in queue load failed.");
+                    rewardedAd = null;
+                    return AdStatus.LoadFailed;
                 }
 
                 //.Log($"CacheAdmod: No ad of '{placementType}' is ready yet.");
