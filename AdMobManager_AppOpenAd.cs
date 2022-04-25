@@ -11,7 +11,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     public void RequestAppOpenAd(AdPlacement.Type adID, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
-        string id = CustomMediation.GetAdmobID(adID, AdMobConst.APP_OPEN_AD);
+        string id = CustomMediation.GetAdmobID(adID);
         RequestAppOpenAd(id, onAdLoaded);
     }
 
