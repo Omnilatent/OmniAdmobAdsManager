@@ -1,4 +1,13 @@
 ===
+1.4.0
+New features:
+- Cache reward ad: preload ad and set max amount of cached ad. Use Dictionary and Ad Container to manage cached ads.
+
+Changes:
+- Custom mediation get id usage: do not pass default ad id anymore. change method work from using same reward video variable to local reward video variable
+- Reward ad: on editor always treat reward ad as success because the order of execution in editor is wrong making user never get reward.
+
+===
 1.3.1
 Changes:
 - Move UnityMainThreadDispatcher from Omni AdsManager to Omni Admob Manager.
