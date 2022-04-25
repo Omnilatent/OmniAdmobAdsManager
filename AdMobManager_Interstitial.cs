@@ -135,15 +135,13 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         {
             //No ad is available
             OnInterstitialFinish(false);
+            Debug.LogError("Last Interstitial request failed. No ad to show.");
         }
-        else
-        {
-            //Old logic, this part shouldn't execute
-            RequestInterstitial();
-            this.interstitial.OnAdLoaded += HandleInterstitialLoaded;
-            //this.interstitial.OnAdFailedToLoad += HandleInterstitialFailedToLoad;
-            //("added listener load");
-        }
+        var e = new Exception($"Last Interstitial request of '{logOriginName}' didn't fail but no ad is ready, this should not happen.");
+        Debug.LogException(e);
+#if !DISABLE_FIREBASE
+        FirebaseManager.LogException(e);
+#endif
     }
 
     public void DestroyInterstitial()
@@ -156,33 +154,15 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         }
     }
 
-    #region Callbacks
+#region Callbacks
 
     void HandleInterstitialFailedToLoadNoShow(object sender, EventArgs args)
     {
         QueueMainThreadExecution(() =>
         {
-            this.interstitial.OnAdLoaded -= HandleInterstitialLoaded;
+            this.interstitial.OnAdLoaded -= HandleInterstitialLoadedNoShow;
             this.interstitial.OnAdFailedToLoad -= HandleInterstitialFailedToLoadNoShow;
-            //Manager.LoadingAnimation(false); //let main AdsManager handle this
-
-            OnInterstitialLoaded();
-
-            lastInterstitialRequestIsFailed = true;
-            ShowError(args);
-        });
-    }
-
-    void HandleInterstitialFailedToLoad(object sender, AdFailedToLoadEventArgs args)
-    {
-        QueueMainThreadExecution(() =>
-        {
-            this.interstitial.OnAdLoaded -= HandleInterstitialLoaded;
-            this.interstitial.OnAdFailedToLoad -= HandleInterstitialFailedToLoad;
-            //Manager.LoadingAnimation(false);
-            onInterstitialFailedToLoad?.Invoke(loadingInterstitialAdObj.placementType, args);
-            OnInterstitialFinish(false);
-
+            OnInterstitialLoaded(false);
             lastInterstitialRequestIsFailed = true;
             ShowError(args);
         });
@@ -196,11 +176,6 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             DestroyInterstitial();
             OnInterstitialFinish(true);
             onInterstitialClosed?.Invoke(currentInterstitialAdObj.placementType, args);
-
-            /*if (Application.platform == RuntimePlatform.Android && cacheInterstitial)
-            {
-                RequestInterstitial();
-            }*/
         });
     }
 
@@ -208,16 +183,15 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     {
         QueueMainThreadExecution(() =>
         {
-            this.interstitial.OnAdLoaded -= HandleInterstitialLoaded;
-            this.interstitial.OnAdLoaded -= HandleInterstitialLoadedNoShow;
-            this.interstitial.OnAdFailedToLoad -= HandleInterstitialFailedToLoad;
-            //Manager.LoadingAnimation(false);
             onInterstitialLoaded?.Invoke(loadingInterstitialAdObj.placementType, args);
             OnInterstitialLoaded(true);
         });
     }
 
-    void OnInterstitialLoaded(bool isSuccess = false)
+    /// <summary>
+    /// Invoke interstitialLoadedDelegate & quit timeOut coroutine
+    /// </summary>
+    void OnInterstitialLoaded(bool isSuccess)
     {
         if (interstitialLoadedDelegate != null)
         {
@@ -250,6 +224,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             onInterstitialImpression?.Invoke(currentInterstitialAdObj.placementType, args);
         });
     }
+
     void HandleInterstitialPaidEvent(object sender, AdValueEventArgs args)
     {
         QueueMainThreadExecution(() =>
@@ -273,5 +248,5 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             onInterstitialOpening?.Invoke(currentInterstitialAdObj.placementType, args);
         });
     }
-    #endregion
+#endregion
 }

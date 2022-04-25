@@ -425,5 +425,21 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             ShowInterstitial();
         });
     }
+
+    [Obsolete]
+    void HandleInterstitialFailedToLoad(object sender, AdFailedToLoadEventArgs args)
+    {
+        QueueMainThreadExecution(() =>
+        {
+            this.interstitial.OnAdLoaded -= HandleInterstitialLoaded;
+            this.interstitial.OnAdFailedToLoad -= HandleInterstitialFailedToLoad;
+            //Manager.LoadingAnimation(false);
+            onInterstitialFailedToLoad?.Invoke(loadingInterstitialAdObj.placementType, args);
+            OnInterstitialFinish(false);
+
+            lastInterstitialRequestIsFailed = true;
+            ShowError(args);
+        });
+    }
     #endregion
 }
