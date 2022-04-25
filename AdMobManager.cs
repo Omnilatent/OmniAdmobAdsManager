@@ -256,16 +256,6 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     #endregion
 
     #region Interstitial
-    public void DestroyInterstitial()
-    {
-        if (this.interstitial != null)
-        {
-            this.interstitial.OnAdClosed -= HandleInterstitialClosed;
-            this.interstitial.Destroy();
-            this.interstitial = null;
-        }
-    }
-
     public bool IsDestroyedInterstitial()
     {
         return (this.interstitial == null);

@@ -8,8 +8,12 @@ using Omnilatent.AdMob;
 public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 {
     public delegate void InterstitialDelegate(bool isSuccess = false);
-    public AdsManager.InterstitialDelegate interstitialFinishDelegate;
+
+    /// <summary>
+    /// Act as intermediate to invoke onAdLoaded
+    /// </summary>
     public AdsManager.InterstitialDelegate interstitialLoadedDelegate;
+    public AdsManager.InterstitialDelegate interstitialFinishDelegate;
 
     AdObject currentInterstitialAdObj = new AdObject();
     AdObject loadingInterstitialAdObj = new AdObject();
@@ -66,10 +70,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             if (!this.interstitial.IsLoaded())
             {
                 //An ad exist but has not loaded yet, destroy it
-                Debug.Log("Previous Interstitial load is not finished");
-                this.interstitial.OnAdClosed -= HandleInterstitialClosed;
-                this.interstitial.Destroy();
-                this.interstitial = null;
+                DestroyInterstitial();
             }
             else
             {
@@ -88,9 +89,11 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             this.interstitial.OnAdClosed += HandleInterstitialClosed;
             this.interstitial.OnAdFailedToLoad += HandleInterstitialFailedToLoadNoShow;
             this.interstitial.OnAdLoaded += HandleInterstitialLoadedNoShow;
+            this.interstitial.OnAdFailedToShow += HandleInterstitialFailedToShow;
+
+            //optional callback
             this.interstitial.OnAdDidRecordImpression += HandleInterstitialImpression;
             this.interstitial.OnPaidEvent += HandleInterstitialPaidEvent;
-            this.interstitial.OnAdFailedToShow += HandleInterstitialFailedToShow;
             this.interstitial.OnAdOpening += HandleInterstitialOpening;
 
             lastInterstitialRequestIsFailed = false;
@@ -140,6 +143,16 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             this.interstitial.OnAdLoaded += HandleInterstitialLoaded;
             //this.interstitial.OnAdFailedToLoad += HandleInterstitialFailedToLoad;
             //("added listener load");
+        }
+    }
+
+    public void DestroyInterstitial()
+    {
+        if (this.interstitial != null)
+        {
+            this.interstitial.OnAdClosed -= HandleInterstitialClosed;
+            this.interstitial.Destroy();
+            this.interstitial = null;
         }
     }
 
@@ -218,6 +231,9 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         }
     }
 
+    /// <summary>
+    /// Invoke interstitialFinishDelegate and set it to null
+    /// </summary>
     void OnInterstitialFinish(bool isSuccess = false)
     {
         if (interstitialFinishDelegate != null)
