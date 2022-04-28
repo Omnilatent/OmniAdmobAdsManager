@@ -1,4 +1,17 @@
 ===
+1.4.1
+New features:
+- Add customizable callbacks to App Open Ad.
+- Add HandleOpenAdDidRecordImpression to App Open Ad.
+
+Changes:
+- Move interstitial related function and field to new file.
+- Log error when 'Last Interstitial request failed. No ad to show.'. Log exception when show interstitial failed unexpectedly.
+- Delete unneeded callback removal.
+- Delete old cache load code.
+- Make HandleInterstitialFailedToLoad obsolete.
+
+===
 1.4.0
 New features:
 - Cache reward ad: preload ad and set max amount of cached ad. Use Dictionary and Ad Container to manage cached ads.

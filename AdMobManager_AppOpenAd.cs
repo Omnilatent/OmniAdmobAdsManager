@@ -6,13 +6,22 @@ using UnityEngine;
 
 public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 {
+    //App Open Ad event
+    public Action<AdPlacement.Type, AdValueEventArgs> onAOAdPaidEvent;
+    public Action<AdPlacement.Type, AdErrorEventArgs> onAOAdFailedToPresentFullScreenContent;
+    public Action<AdPlacement.Type, EventArgs> onAOAdDidPresentFullScreenContent;
+    public Action<AdPlacement.Type, EventArgs> onAOAdDidDismissFullScreenContent;
+    public Action<AdPlacement.Type, EventArgs> onAOAdDidRecordImpression;
+
     AppOpenAd appOpenAd;
     AdsManager.InterstitialDelegate onAppOpenAdClosed;
+    AdPlacement.Type currentAppOpenAdPlacement;
 
     public void RequestAppOpenAd(AdPlacement.Type adID, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
         string id = CustomMediation.GetAdmobID(adID);
         RequestAppOpenAd(id, onAdLoaded);
+        currentAppOpenAdPlacement = adID;
     }
 
     public void RequestAppOpenAd(string adID, AdsManager.InterstitialDelegate onAdLoaded = null)
@@ -56,16 +65,18 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         appOpenAd.OnAdFailedToPresentFullScreenContent += HandleAdFailedToPresentFullScreenContent;
         appOpenAd.OnAdDidPresentFullScreenContent += HandleAdDidPresentFullScreenContent;
         appOpenAd.OnPaidEvent += HandleOpenAdPaidEvent;
+        appOpenAd.OnAdDidRecordImpression += HandleOpenAdDidRecordImpression;
 
         appOpenAd.Show();
     }
 
-    private void HandleOpenAdPaidEvent(object sender, AdValueEventArgs e)
+    private void HandleOpenAdPaidEvent(object sender, AdValueEventArgs args)
     {
         QueueMainThreadExecution(() =>
         {
+            onAOAdPaidEvent?.Invoke(currentAppOpenAdPlacement, args);
             Debug.LogFormat("Received paid event. (currency: {0}, value: {1}",
-                e.AdValue.CurrencyCode, e.AdValue.Value);
+                args.AdValue.CurrencyCode, args.AdValue.Value);
         });
     }
 
@@ -79,6 +90,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             onAppOpenAdClosed?.Invoke(true);
             onAppOpenAdClosed = null;
             //LoadOpenAd();
+            onAOAdDidDismissFullScreenContent?.Invoke(currentAppOpenAdPlacement, args);
         });
     }
 
@@ -92,6 +104,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             onAppOpenAdClosed?.Invoke(false);
             onAppOpenAdClosed = null;
             //LoadOpenAd();
+            onAOAdFailedToPresentFullScreenContent?.Invoke(currentAppOpenAdPlacement, args);
         });
     }
 
@@ -100,6 +113,15 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         QueueMainThreadExecution(() =>
         {
             showingAds = true;
+            onAOAdDidPresentFullScreenContent?.Invoke(currentAppOpenAdPlacement, args);
+        });
+    }
+
+    private void HandleOpenAdDidRecordImpression(object sender, EventArgs args)
+    {
+        QueueMainThreadExecution(() =>
+        {
+            onAOAdDidRecordImpression?.Invoke(currentAppOpenAdPlacement, args);
         });
     }
 }
