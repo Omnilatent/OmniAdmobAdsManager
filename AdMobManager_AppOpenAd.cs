@@ -67,7 +67,11 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         appOpenAd.OnPaidEvent += HandleOpenAdPaidEvent;
         appOpenAd.OnAdDidRecordImpression += HandleOpenAdDidRecordImpression;
 
+        float currentTimeScale = Time.timeScale;
         appOpenAd.Show();
+#if UNITY_EDITOR
+        Time.timeScale = currentTimeScale;
+#endif
     }
 
     private void HandleOpenAdPaidEvent(object sender, AdValueEventArgs args)
