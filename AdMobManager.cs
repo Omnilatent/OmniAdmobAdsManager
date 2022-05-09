@@ -15,8 +15,17 @@ using Omnilatent.AdMob;
 public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 {
     public const float TIME_BETWEEN_ADS = 10f;
+
+    /// <summary>
+    /// Time waited when loading an interstitial ad before forcing a timeout.
+    /// </summary>
     public static float TIMEOUT_LOADAD = 12f;
+
+    /// <summary>
+    /// Time waited when loading an rewarded ad before forcing a timeout.
+    /// </summary>
     public static float TIMEOUT_LOADREWARDAD = 12f;
+
     public static string appId;
     public static string bannerId;
     public AdSize currentBannerSize = AdSize.Banner;
