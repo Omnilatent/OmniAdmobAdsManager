@@ -10,6 +10,7 @@ Changes:
 - Delete unneeded callback removal.
 - Delete old cache load code.
 - Make HandleInterstitialFailedToLoad obsolete.
+- Keep time scale unchanged when app open ad is shown to prevent conflict with game time scale (Editor only).
 
 ===
 1.4.0
