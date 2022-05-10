@@ -118,6 +118,12 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
                     onAOAdDidRecordImpression?.Invoke(adID, args);
                 });
             };
+
+            float currentTimeScale = Time.timeScale;
+            appOpenAdReady.Show();
+#if UNITY_EDITOR
+            Time.timeScale = currentTimeScale;
+#endif
         }
     }
 

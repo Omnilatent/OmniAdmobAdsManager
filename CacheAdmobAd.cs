@@ -30,20 +30,22 @@ namespace Omnilatent.AdMob
             public AdPlacement.Type placementId;
             public AdStatus status;
             public object ad;
+            Type admobType; //value can be RewardedAd or AppOpenAd
 
-            public CachedAdContainer(AdPlacement.Type placementId, object ad)
+            public CachedAdContainer(AdPlacement.Type placementId, object ad, Type admobType)
             {
                 this.placementId = placementId;
                 this.status = AdStatus.Loading;
                 this.ad = ad;
+                this.admobType = admobType;
             }
 
             public RewardedAd GetRewardedAd() => (RewardedAd)ad;
             public AppOpenAd GetAppOpenAd() => (AppOpenAd)ad;
             public bool IsAdLoaded()
             {
-                if (TypeIsAppOpenAd(ad.GetType())) { return ad != null; }
-                else if (TypeIsRewardedAd(ad.GetType())) { return GetRewardedAd().IsLoaded(); }
+                if (TypeIsAppOpenAd(admobType)) { return ad != null; }
+                else if (TypeIsRewardedAd(admobType)) { return GetRewardedAd().IsLoaded(); }
                 throw new Exception("Unhandled type of ad. Only App Open and Rewarded Ad is supported.");
             }
         }
@@ -60,7 +62,7 @@ namespace Omnilatent.AdMob
             List<CachedAdContainer> adQueue = GetCachedAdContainerList<RewardedAd>(placementType, true);
             string id = CustomMediation.GetAdmobID(placementType);
             var newAd = new RewardedAd(id);
-            CachedAdContainer cacheContainer = new CachedAdContainer(placementType, newAd);
+            CachedAdContainer cacheContainer = new CachedAdContainer(placementType, newAd, typeof(RewardedAd));
             AddCallbackToRewardVideo(newAd, cacheContainer);
             adQueue.Add(cacheContainer);
             AdRequest request = new AdRequest.Builder().Build();
@@ -203,7 +205,7 @@ namespace Omnilatent.AdMob
             string id = CustomMediation.GetAdmobID(placementType);
 
             AppOpenAd newAd = null;
-            CachedAdContainer cacheContainer = new CachedAdContainer(placementType, newAd);
+            CachedAdContainer cacheContainer = new CachedAdContainer(placementType, newAd, typeof(AppOpenAd));
             adQueue.Add(cacheContainer);
 
             AdRequest request = new AdRequest.Builder().Build();
@@ -224,7 +226,7 @@ namespace Omnilatent.AdMob
                 }
                 else
                 {
-                    newAd = newAppOpenAd;
+                    cacheContainer.ad = newAppOpenAd;
                     onAdLoaded?.Invoke(new RewardResult(RewardResult.Type.Finished));
                 }
             });
