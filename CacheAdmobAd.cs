@@ -9,6 +9,7 @@ namespace Omnilatent.AdMob
     public static class CacheAdmobAd
     {
         private static Dictionary<AdPlacement.Type, List<CachedAdContainer>> rewardAdsCache;
+        private static Dictionary<AdPlacement.Type, List<CachedAdContainer>> appOpenAdsCache;
 
         /// <summary>
         /// Max amount of ad to be preloaded per placement
@@ -38,11 +39,19 @@ namespace Omnilatent.AdMob
             }
 
             public RewardedAd GetRewardedAd() => (RewardedAd)ad;
+            public AppOpenAd GetAppOpenAd() => (AppOpenAd)ad;
+            public bool IsAdLoaded()
+            {
+                if (TypeIsAppOpenAd(ad.GetType())) { return ad != null; }
+                else if (TypeIsRewardedAd(ad.GetType())) { return GetRewardedAd().IsLoaded(); }
+                throw new Exception("Unhandled type of ad. Only App Open and Rewarded Ad is supported.");
+            }
         }
 
         static CacheAdmobAd()
         {
             rewardAdsCache = new Dictionary<AdPlacement.Type, List<CachedAdContainer>>();
+            appOpenAdsCache = new Dictionary<AdPlacement.Type, List<CachedAdContainer>>();
         }
 
         public static void PreloadRewardAd(AdPlacement.Type placementType)
@@ -174,6 +183,102 @@ namespace Omnilatent.AdMob
 
                 //.Log($"CacheAdmod: No ad of '{placementType}' is ready yet.");
                 rewardedAd = null;
+                return AdStatus.Loading;
+            }
+        }
+
+        //App Open Ad
+        public static void PreloadAppOpenAd(AdPlacement.Type placementType)
+        {
+            List<CachedAdContainer> adQueue = GetCachedAdContainerList(placementType, true);
+            string id = CustomMediation.GetAdmobID(placementType);
+
+            AppOpenAd newAd = null;
+            CachedAdContainer cacheContainer = new CachedAdContainer(placementType, newAd);
+            adQueue.Add(cacheContainer);
+
+            AdRequest request = new AdRequest.Builder().Build();
+            // Load an app open ad for portrait orientation
+            AppOpenAd.LoadAd(id, Screen.orientation, request, (newAppOpenAd, error) =>
+            {
+                if (error != null)
+                {
+                    // Handle the error.
+                    Debug.LogFormat("Failed to load the ad {1}. (reason: {0})", error.LoadAdError.GetMessage(), cacheContainer.placementId);
+                    //onAdLoaded?.Invoke(false);
+                    AdsManager.LogError($"[{cacheContainer.placementId}]-id:'{id}' load failed.{error.LoadAdError.GetMessage()}", cacheContainer.placementId.ToString());
+
+                    cacheContainer.status = AdStatus.LoadFailed;
+                    cacheContainer.GetAppOpenAd().Destroy();
+                    //GetCachedAdContainerList(container.placementId, false).Remove(container);
+                    return;
+                }
+                else
+                {
+                    newAd = newAppOpenAd;
+                }
+            });
+            Debug.Log($"Preload {placementType}. adQueue size {adQueue.Count}");
+        }
+
+        //Generic Ad Load
+        static bool TypeIsRewardedAd(Type t) { return t == typeof(RewardedAd); }
+        static bool TypeIsAppOpenAd(Type t) { return t == typeof(AppOpenAd); }
+
+        public static void PreloadAd<T>(AdPlacement.Type placementType)
+        {
+            if (TypeIsRewardedAd(typeof(T)))
+            {
+                PreloadRewardAd(placementType);
+            }
+            else if (TypeIsAppOpenAd(typeof(T)))
+            {
+                PreloadAppOpenAd(placementType);
+            }
+        }
+
+        static AdStatus GetReadyAd<T>(AdPlacement.Type placementType, out T adReady) where T : class
+        {
+            var adQueue = GetCachedAdContainerList(placementType, false);
+            if (adQueue == null || adQueue.Count == 0)
+            {
+                Debug.Log($"CacheAdmod: Cached ad list of '{placementType}' not found. Initializing.");
+                PreloadRewardAd(placementType);
+                adReady = null;
+                return AdStatus.Loading;
+            }
+            else if (adQueue.Count == 0 && AdsManager.HasNoInternet())
+            {
+                adReady = null;
+                return AdStatus.LoadFailed;
+            }
+            else
+            {
+                int failedCount = 0, adQueueSizeBeforeCheck = adQueue.Count;
+                for (int i = adQueue.Count - 1; i >= 0; i--)
+                {
+                    if (adQueue[i].IsAdLoaded())
+                    {
+                        adReady = (T)adQueue[i].ad;
+                        adQueue.RemoveAt(i);
+                        return AdStatus.LoadSuccess;
+                    }
+                    else if (adQueue[i].status == AdStatus.LoadFailed)
+                    {
+                        adQueue.RemoveAt(i);
+                        failedCount++;
+                    }
+                }
+
+                if (adQueueSizeBeforeCheck == failedCount)
+                {
+                    Debug.Log("All ads in queue load failed.");
+                    adReady = null;
+                    return AdStatus.LoadFailed;
+                }
+
+                //.Log($"CacheAdmod: No ad of '{placementType}' is ready yet.");
+                adReady = null;
                 return AdStatus.Loading;
             }
         }
