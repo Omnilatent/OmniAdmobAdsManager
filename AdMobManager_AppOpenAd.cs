@@ -1,4 +1,5 @@
 ﻿using GoogleMobileAds.Api;
+using Omnilatent.AdMob;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     AdsManager.InterstitialDelegate onAppOpenAdClosed;
     AdPlacement.Type currentAppOpenAdPlacement;
 
+    [Obsolete]
     public void RequestAppOpenAd(AdPlacement.Type adID, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
         string id = CustomMediation.GetAdmobID(adID);
@@ -24,6 +26,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         currentAppOpenAdPlacement = adID;
     }
 
+    [Obsolete]
     public void RequestAppOpenAd(string adID, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
         AdRequest request = new AdRequest.Builder().Build();
@@ -46,10 +49,76 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         }));
     }
 
-    public void ShowAppOpenAd(AdPlacement.Type adID, AdsManager.InterstitialDelegate onAdClosed = null)
+    public void RequestAppOpenAd(AdPlacement.Type adID, RewardDelegate onAdLoaded)
+    {
+        CacheAdmobAd.PreloadAd<AppOpenAd>(adID, onAdLoaded);
+    }
+
+    /*public void ShowAppOpenAd(AdPlacement.Type adID, AdsManager.InterstitialDelegate onAdClosed = null)
     {
         onAppOpenAdClosed = onAdClosed;
         ShowAppOpenAd();
+    }*/
+
+    public void ShowAppOpenAd(AdPlacement.Type adID, AdsManager.InterstitialDelegate onAdClosed = null)
+    {
+        AppOpenAd appOpenAdReady;
+        CacheAdmobAd.AdStatus cacheAdState = CacheAdmobAd.GetReadyAd<AppOpenAd>(adID, out appOpenAdReady);
+
+        if (appOpenAdReady == null || showingAds)
+        {
+            onAdClosed?.Invoke(false);
+            return;
+        }
+        if (appOpenAdReady != null)
+        {
+            appOpenAdReady.OnAdDidDismissFullScreenContent += (sender, args) =>
+            {
+                QueueMainThreadExecution(() =>
+                {
+                    // Set the ad to null to indicate that AppOpenAdManager no longer has another ad to show.
+                    appOpenAdReady = null;
+                    showingAds = false;
+                    onAdClosed?.Invoke(true);
+                    onAOAdDidDismissFullScreenContent?.Invoke(adID, args);
+                });
+            };
+            appOpenAdReady.OnAdFailedToPresentFullScreenContent += (sender, args) =>
+            {
+                QueueMainThreadExecution(() =>
+                {
+                    Debug.LogFormat("Failed to present the ad (reason: {0})", args.AdError.GetMessage());
+                    appOpenAdReady = null;
+                    showingAds = false;
+                    onAdClosed?.Invoke(false);
+                    onAdClosed = null;
+                    onAOAdFailedToPresentFullScreenContent?.Invoke(adID, args);
+                });
+            };
+            appOpenAdReady.OnAdDidPresentFullScreenContent += (sender, args) =>
+            {
+                QueueMainThreadExecution(() =>
+                {
+                    showingAds = true;
+                    onAOAdDidPresentFullScreenContent?.Invoke(adID, args);
+                });
+            };
+            appOpenAdReady.OnPaidEvent += (sender, args) =>
+            {
+                QueueMainThreadExecution(() =>
+                {
+                    onAOAdPaidEvent?.Invoke(adID, args);
+                    Debug.LogFormat("Received paid event. (currency: {0}, value: {1}", args.AdValue.CurrencyCode, args.AdValue.Value);
+                });
+            };
+            appOpenAdReady.OnAdDidRecordImpression += (sender, args) =>
+            {
+                QueueMainThreadExecution(() =>
+                {
+                    onAOAdDidRecordImpression?.Invoke(adID, args);
+                });
+            };
+        }
     }
 
     public void ShowAppOpenAd()

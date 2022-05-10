@@ -222,7 +222,7 @@ public partial class AdMobManager : MonoBehaviour
         WaitForSecondsRealtime checkInterval = new WaitForSecondsRealtime(0.1f);
         do
         {
-            cacheAdState = CacheAdmobAd.GetReadyRewardAd(placementType, out rewardedAd);
+            cacheAdState = CacheAdmobAd.GetReadyAd<RewardedAd>(placementType, out rewardedAd);
             if (cacheAdState == CacheAdmobAd.AdStatus.LoadSuccess)
             {
                 RewardResult rewardResult = new RewardResult(RewardResult.Type.Canceled);
@@ -245,7 +245,7 @@ public partial class AdMobManager : MonoBehaviour
                         this.showingAds = false;
                         onFinish.Invoke(rewardResult);
                         rewardedAd.Destroy();
-                        CacheAdmobAd.CheckAdQueueSizeAndPreload(placementType);
+                        CacheAdmobAd.CheckAdQueueSizeAndPreload<RewardedAd>(placementType);
                         onRewardAdClosed?.Invoke(placementType, e);
                     });
                 };
