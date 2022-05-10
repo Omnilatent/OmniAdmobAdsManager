@@ -54,9 +54,10 @@ namespace Omnilatent.AdMob
             appOpenAdsCache = new Dictionary<AdPlacement.Type, List<CachedAdContainer>>();
         }
 
+        #region Rewarded Ad
         public static void PreloadRewardAd(AdPlacement.Type placementType)
         {
-            List<CachedAdContainer> adQueue = GetCachedAdContainerList(placementType, true);
+            List<CachedAdContainer> adQueue = GetCachedAdContainerList<RewardedAd>(placementType, true);
             string id = CustomMediation.GetAdmobID(placementType);
             var newAd = new RewardedAd(id);
             CachedAdContainer cacheContainer = new CachedAdContainer(placementType, newAd);
@@ -73,7 +74,7 @@ namespace Omnilatent.AdMob
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
-                    CheckAdQueueSizeAndPreload(container.placementId);
+                    CheckAdQueueSizeAndPreload<RewardedAd>(container.placementId);
                     container.status = AdStatus.LoadSuccess;
                     Debug.Log($"Ad {container.placementId} loaded success");
                     AdMobManager.instance.onRewardAdLoaded?.Invoke(container.placementId, args);
@@ -119,20 +120,24 @@ namespace Omnilatent.AdMob
                 });
             };
         }
+        #endregion
 
-        public static void CheckAdQueueSizeAndPreload(AdPlacement.Type placementId)
+        public static void CheckAdQueueSizeAndPreload<T>(AdPlacement.Type placementId)
         {
-            var containerList = GetCachedAdContainerList(placementId, false);
+            var containerList = GetCachedAdContainerList<T>(placementId, false);
             if (containerList.Count < maxCacheAdAmount)
             {
-                PreloadRewardAd(placementId);
+                PreloadAd<T>(placementId);
             }
         }
 
-        static List<CachedAdContainer> GetCachedAdContainerList(AdPlacement.Type placementType, bool initListIfNotExist)
+        static List<CachedAdContainer> GetCachedAdContainerList<T>(AdPlacement.Type placementType, bool initListIfNotExist)
         {
             List<CachedAdContainer> adQueue;
-            if (sameAdTypeShareCache) { placementType = AdPlacement.Reward; }
+            if (sameAdTypeShareCache)
+            {
+                placementType = AdPlacement.Reward;
+            }
             if (!rewardAdsCache.TryGetValue(placementType, out adQueue) && initListIfNotExist)
             {
                 rewardAdsCache.Add(placementType, new List<CachedAdContainer>());
@@ -143,7 +148,7 @@ namespace Omnilatent.AdMob
 
         public static AdStatus GetReadyRewardAd(AdPlacement.Type placementType, out RewardedAd rewardedAd)
         {
-            var adQueue = GetCachedAdContainerList(placementType, false);
+            var adQueue = GetCachedAdContainerList<RewardedAd>(placementType, false);
             if (adQueue == null || adQueue.Count == 0)
             {
                 Debug.Log($"CacheAdmod: Cached ad list of '{placementType}' not found. Initializing.");
@@ -190,7 +195,7 @@ namespace Omnilatent.AdMob
         //App Open Ad
         public static void PreloadAppOpenAd(AdPlacement.Type placementType)
         {
-            List<CachedAdContainer> adQueue = GetCachedAdContainerList(placementType, true);
+            List<CachedAdContainer> adQueue = GetCachedAdContainerList<AppOpenAd>(placementType, true);
             string id = CustomMediation.GetAdmobID(placementType);
 
             AppOpenAd newAd = null;
@@ -239,7 +244,7 @@ namespace Omnilatent.AdMob
 
         static AdStatus GetReadyAd<T>(AdPlacement.Type placementType, out T adReady) where T : class
         {
-            var adQueue = GetCachedAdContainerList(placementType, false);
+            var adQueue = GetCachedAdContainerList<T>(placementType, false);
             if (adQueue == null || adQueue.Count == 0)
             {
                 Debug.Log($"CacheAdmod: Cached ad list of '{placementType}' not found. Initializing.");
