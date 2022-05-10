@@ -3,7 +3,7 @@ Module for wrapping Admob Ads
 
 ## Dependencies
 
-- Omni Ads Manager.
+- Omni Ads Manager 2.5.0+.
 - Google Mobile Ads SDK 6.1.2.
 
 ## USAGE

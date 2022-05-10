@@ -1,4 +1,11 @@
 ===
+1.5.0
+New features:
+- Cache Admob Ad can cache multiple App Open Ad placements.
+- Get cached ad method now support generic types.
+Requires AdsManager 2.5.0 to work.
+
+===
 1.4.1
 New features:
 - Add customizable callbacks to App Open Ad.
