@@ -261,7 +261,7 @@ namespace Omnilatent.AdMob
             if (adQueue == null || adQueue.Count == 0)
             {
                 Debug.Log($"CacheAdmod: Cached ad list of '{placementType}' not found. Initializing.");
-                PreloadRewardAd(placementType);
+                PreloadAd<T>(placementType);
                 adReady = null;
                 return AdStatus.Loading;
             }
