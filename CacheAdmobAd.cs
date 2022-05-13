@@ -212,23 +212,26 @@ namespace Omnilatent.AdMob
             // Load an app open ad for portrait orientation
             AppOpenAd.LoadAd(id, Screen.orientation, request, (newAppOpenAd, error) =>
             {
-                if (error != null)
+                AdMobManager.QueueMainThreadExecution(() =>
                 {
-                    // Handle the error.
-                    Debug.LogFormat("Failed to load the ad {1}. (reason: {0})", error.LoadAdError.GetMessage(), cacheContainer.placementId);
-                    onAdLoaded?.Invoke(new RewardResult(RewardResult.Type.LoadFailed));
-                    AdsManager.LogError($"[{cacheContainer.placementId}]-id:'{id}' load failed.{error.LoadAdError.GetMessage()}", cacheContainer.placementId.ToString());
+                    if (error != null)
+                    {
+                        // Handle the error.
+                        Debug.LogFormat("Failed to load the ad {1}. (reason: {0})", error.LoadAdError.GetMessage(), cacheContainer.placementId);
+                        onAdLoaded?.Invoke(new RewardResult(RewardResult.Type.LoadFailed));
+                        AdsManager.LogError($"[{cacheContainer.placementId}]-id:'{id}' load failed.{error.LoadAdError.GetMessage()}", cacheContainer.placementId.ToString());
 
-                    cacheContainer.status = AdStatus.LoadFailed;
-                    cacheContainer.GetAppOpenAd().Destroy();
-                    //GetCachedAdContainerList(container.placementId, false).Remove(container);
-                    return;
-                }
-                else
-                {
-                    cacheContainer.ad = newAppOpenAd;
-                    onAdLoaded?.Invoke(new RewardResult(RewardResult.Type.Finished));
-                }
+                        cacheContainer.status = AdStatus.LoadFailed;
+                        cacheContainer.GetAppOpenAd().Destroy();
+                        //GetCachedAdContainerList(container.placementId, false).Remove(container);
+                        return;
+                    }
+                    else
+                    {
+                        cacheContainer.ad = newAppOpenAd;
+                        onAdLoaded?.Invoke(new RewardResult(RewardResult.Type.Finished));
+                    }
+                });
             });
             Debug.Log($"Preload {placementType}. adQueue size {adQueue.Count}");
         }
