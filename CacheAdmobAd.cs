@@ -48,6 +48,18 @@ namespace Omnilatent.AdMob
                 else if (TypeIsRewardedAd(admobType)) { return GetRewardedAd().IsLoaded(); }
                 throw new Exception("Unhandled type of ad. Only App Open and Rewarded Ad is supported.");
             }
+
+            public void DestroyAd()
+            {
+                if (TypeIsAppOpenAd(admobType))
+                {
+                    if (GetAppOpenAd() != null) GetAppOpenAd().Destroy();
+                }
+                else if (TypeIsRewardedAd(admobType))
+                {
+                    if (GetRewardedAd() != null) GetRewardedAd().Destroy();
+                }
+            }
         }
 
         static CacheAdmobAd()
@@ -87,7 +99,7 @@ namespace Omnilatent.AdMob
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
                     container.status = AdStatus.LoadFailed;
-                    container.GetRewardedAd().Destroy();
+                    container.DestroyAd();
                     //GetCachedAdContainerList(container.placementId, false).Remove(container);
                     Debug.Log($"Ad {container.placementId} loaded failed");
                     AdMobManager.instance.onRewardAdFailedToLoad?.Invoke(container.placementId, e);
@@ -222,7 +234,7 @@ namespace Omnilatent.AdMob
                         AdsManager.LogError($"[{cacheContainer.placementId}]-id:'{id}' load failed.{error.LoadAdError.GetMessage()}", cacheContainer.placementId.ToString());
 
                         cacheContainer.status = AdStatus.LoadFailed;
-                        cacheContainer.GetAppOpenAd().Destroy();
+                        cacheContainer.DestroyAd();
                         //GetCachedAdContainerList(container.placementId, false).Remove(container);
                         return;
                     }
