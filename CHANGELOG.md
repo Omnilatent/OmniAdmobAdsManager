@@ -1,4 +1,28 @@
 ===
+1.5.2
+Fixes:
+- Cache admob ad: check ad null before destroying
+
+===
+1.5.1
+Changes:
+- Convert all string message in Reward ad to const variable in AdmobConst to make localize easier.
+
+Fixes:
+- Fix cache container not updating app open ad when ad is loaded.
+- Fix ad type null exception when ad object is null by adding ad type as a field for cached ad container.
+- Add show cached open ad code.
+- Fix GetReadyAd: use correct generic PreloadAd instead of PreloadRewardAd.
+- CacheAdmobAd: queue main thread execution for callback when App open ad is loaded.
+
+===
+1.5.0
+New features:
+- Cache Admob Ad can cache multiple App Open Ad placements.
+- Get cached ad method now support generic types.
+Requires AdsManager 2.5.0 to work.
+
+===
 1.4.1
 New features:
 - Add customizable callbacks to App Open Ad.

@@ -19,14 +19,12 @@ public partial class AdMobManager : MonoBehaviour
     public Action<AdPlacement.Type, AdValueEventArgs> onRewardAdPaidEvent;
     public Action<AdPlacement.Type, Reward> onRewardAdUserEarnReward;
 
-    const string loadingRewardAdMsg = "Loading Reward Ad.";
-
     public static void RewardAdmob(RewardDelegate onFinish, string rewardVideoAdId = AdMobConst.REWARD_ID)
     {
         /*#if UNITY_EDITOR
                 onFinish(new RewardResult(RewardResult.Type.Finished));
         #else*/
-        if (AdsManager.HasNoInternet()) { onFinish(new RewardResult(RewardResult.Type.LoadFailed, "No internet connection.")); }
+        if (AdsManager.HasNoInternet()) { onFinish(new RewardResult(RewardResult.Type.LoadFailed, AdMobConst.noInternetConnectionMsg)); }
         else if (AdMobManager.instance != null)
         {
             AdMobManager.instance.ShowRewardBasedVideo((rewarded) =>
@@ -222,7 +220,7 @@ public partial class AdMobManager : MonoBehaviour
         WaitForSecondsRealtime checkInterval = new WaitForSecondsRealtime(0.1f);
         do
         {
-            cacheAdState = CacheAdmobAd.GetReadyRewardAd(placementType, out rewardedAd);
+            cacheAdState = CacheAdmobAd.GetReadyAd<RewardedAd>(placementType, out rewardedAd);
             if (cacheAdState == CacheAdmobAd.AdStatus.LoadSuccess)
             {
                 RewardResult rewardResult = new RewardResult(RewardResult.Type.Canceled);
@@ -245,7 +243,7 @@ public partial class AdMobManager : MonoBehaviour
                         this.showingAds = false;
                         onFinish.Invoke(rewardResult);
                         rewardedAd.Destroy();
-                        CacheAdmobAd.CheckAdQueueSizeAndPreload(placementType);
+                        CacheAdmobAd.CheckAdQueueSizeAndPreload<RewardedAd>(placementType);
                         onRewardAdClosed?.Invoke(placementType, e);
                     });
                 };
@@ -280,20 +278,20 @@ public partial class AdMobManager : MonoBehaviour
             {
                 if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
                 {
-                    rewardResult = new RewardResult(RewardResult.Type.LoadFailed, "Rewarded Ad self timeout.");
+                    rewardResult = new RewardResult(RewardResult.Type.LoadFailed, AdMobConst.rewardAdSelfTimeoutMsg);
                 }
                 else
                 {
-                    rewardResult = new RewardResult(RewardResult.Type.Loading, loadingRewardAdMsg);
+                    rewardResult = new RewardResult(RewardResult.Type.Loading, AdMobConst.loadingRewardAdMsg);
                 }
             }
             else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
             {
-                rewardResult = new RewardResult(RewardResult.Type.LoadFailed, "Ad loads failed. Please check internet connection.");
+                rewardResult = new RewardResult(RewardResult.Type.LoadFailed, AdMobConst.adLoadFailCheckConnectionMsg);
             }
             else
             {
-                rewardResult = new RewardResult(RewardResult.Type.Loading, loadingRewardAdMsg);
+                rewardResult = new RewardResult(RewardResult.Type.Loading, AdMobConst.loadingRewardAdMsg);
             }
             onFinish?.Invoke(rewardResult);
         }
