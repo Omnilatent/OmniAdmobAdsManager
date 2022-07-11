@@ -29,7 +29,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     public static string appId;
     public static string bannerId;
-    public AdSize currentBannerSize = AdSize.Banner;
+    [Obsolete] public AdSize currentBannerSize = AdSize.Banner;
 
     public static string videoId;
     public static string interstitialId;
@@ -43,7 +43,9 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public delegate void BoolDelegate(bool reward);
     public RewardDelegate adsVideoRewardedCallback; //For traditional Rewarded Video
 
-    public AdsManager.InterstitialDelegate bannerLoadedDelegate;
+    [Obsolete] public AdsManager.InterstitialDelegate bannerLoadedDelegate;
+    public Action<AdPlacement.Type, AdFailedToLoadEventArgs> onBannerFailedToLoad;
+    public Action<AdPlacement.Type, AdValueEventArgs> onBannerPaidEvent;
 
 
     private static AdMobManager _instance;
@@ -64,11 +66,13 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     //[SerializeField] bool m_ShowBannerOnStart = true;
 
     private BannerView bannerView;
+    private AdmobBannerAdObject currentBannerAd;
 
     private InterstitialAd interstitial;
 
     private RewardResult rewardResult;
 
+    [Obsolete]
     public bool isShowBanner
     {
         get;
@@ -163,46 +167,60 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     }
 
     #region Banner
-    public void RequestBanner(string placementId, AdSize adSize, GoogleMobileAds.Api.AdPosition adPosition)
+    public void RequestBanner(AdPlacement.Type placementType, AdSize adSize, GoogleMobileAds.Api.AdPosition adPosition)
     {
-        if (this.bannerView == null)
+        string placementId = CustomMediation.GetAdmobID(placementType);
+        if (this.currentBannerAd == null)
         {
             AdMobManager.bannerId = placementId;
-            currentBannerSize = adSize;
             // Create a smart banner at the bottom of the screen.
-            this.bannerView = new BannerView(placementId, adSize, adPosition);
+            currentBannerAd = new AdmobBannerAdObject(placementType, null);
+            currentBannerAd.BannerView = new BannerView(placementId, adSize, adPosition);
 
             // Load a banner ad.
-            this.bannerView.OnAdFailedToLoad += OnBannerAdsFailedToLoad;
-            this.bannerView.OnAdLoaded += OnBannerAdsLoaded;
-            this.bannerView.LoadAd(this.CreateAdRequest());
+            currentBannerAd.BannerView.OnAdFailedToLoad += OnBannerAdsFailedToLoad;
+            currentBannerAd.BannerView.OnAdLoaded += OnBannerAdsLoaded;
+            currentBannerAd.BannerView.OnPaidEvent += OnBannerPaidEvent;
+            currentBannerAd.State = AdObjectState.Loading;
+            currentBannerAd.BannerView.LoadAd(this.CreateAdRequest());
         }
     }
 
-    void OnBannerAdsFailedToLoad(object sender, EventArgs args)
+    void OnBannerAdsFailedToLoad(object sender, AdFailedToLoadEventArgs args)
     {
         ShowError(args);
+        GetCurrentBannerAdObject().onAdLoaded?.Invoke(false);
+        onBannerFailedToLoad?.Invoke(GetCurrentBannerAdObject().AdPlacementType, args);
         DestroyBanner();
-        bannerLoadedDelegate?.Invoke(false);
     }
 
     void OnBannerAdsLoaded(object sender, EventArgs args)
     {
-        if (this.bannerView != null && isShowBanner)
-            this.bannerView.Show();
-        bannerLoadedDelegate?.Invoke(true);
+        if (this.currentBannerAd != null)
+        {
+            currentBannerAd.BannerView.Show();
+            currentBannerAd.State = AdObjectState.Showing;
+        }
+        GetCurrentBannerAdObject().onAdLoaded?.Invoke(true);
+    }
+
+    void OnBannerPaidEvent(object sender, AdValueEventArgs args)
+    {
+        onBannerPaidEvent?.Invoke(GetCurrentBannerAdObject().AdPlacementType, args);
     }
 
     public void DestroyBanner()
     {
-        if (this.bannerView != null)
+        if (this.currentBannerAd != null)
         {
-            this.bannerView.OnAdFailedToLoad -= OnBannerAdsFailedToLoad;
-            this.bannerView.Destroy();
-            this.bannerView = null;
+            currentBannerAd.BannerView.OnAdFailedToLoad -= OnBannerAdsFailedToLoad;
+            currentBannerAd.BannerView.Destroy();
+            currentBannerAd.BannerView = null;
+            currentBannerAd = null;
         }
     }
 
+    [Obsolete("Use ShowBanner(AdPlacement.Type) instead", true)]
     public void ShowBanner(string placementId, AdSize adSize, GoogleMobileAds.Api.AdPosition adPosition, float delay = 0f, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
         if (noAds != null && noAds())
@@ -232,7 +250,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         {
             //.Log(string.Format("destroying current banner({0} {1}), showing new one", AdsManager.bannerId, currentBannerSize));
             DestroyBanner();
-            RequestBanner(placementId, adSize, adPosition);
+            //RequestBanner(placementId, adSize, adPosition);
         }
 
         isShowBanner = true;
@@ -251,17 +269,27 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     public void HideBanner()
     {
-        if (noAds != null && noAds())
-            return;
-
         CancelInvoke("CoShowBanner");
 
-        if (this.bannerView != null)
+        if (GetCurrentBannerAdObject().BannerView != null)
         {
-            this.bannerView.Hide();
+            GetCurrentBannerAdObject().BannerView.Hide();
         }
+        GetCurrentBannerAdObject().State = AdObjectState.Ready;
+    }
 
-        isShowBanner = false;
+    private AdmobBannerAdObject GetCurrentBannerAdObject(bool makeNewIfNull = true)
+    {
+        if (currentBannerAd == null)
+        {
+            Debug.LogError("currentBannerAd is null.");
+            if (makeNewIfNull)
+            {
+                Debug.Log("New ad will be created");
+                currentBannerAd = new AdmobBannerAdObject();
+            }
+        }
+        return currentBannerAd;
     }
     #endregion
 
@@ -307,7 +335,21 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         {
             adPosition = (GoogleMobileAds.Api.AdPosition)bannerTransform.adPosition;
         }
-        ShowBanner(id, AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth), adPosition, 0f, onAdLoaded);
+        //ShowBanner(id, AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth), adPosition, 0f, onAdLoaded);
+
+        var adSize = AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth);
+        if (currentBannerAd != null && currentBannerAd.AdPlacementType == placementType)
+        {
+            onAdLoaded?.Invoke(true);
+            currentBannerAd.BannerView.Show();
+            currentBannerAd.State = AdObjectState.Showing;
+        }
+        else
+        {
+            //.Log(string.Format("destroying current banner({0} {1}), showing new one", AdsManager.bannerId, currentBannerSize));
+            DestroyBanner();
+            RequestBanner(placementType, adSize, adPosition);
+        }
     }
 
     public void Reward(AdPlacement.Type placementId, RewardDelegate onFinish)
