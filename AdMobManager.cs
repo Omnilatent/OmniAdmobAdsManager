@@ -167,14 +167,14 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     }
 
     #region Banner
-    public void RequestBanner(AdPlacement.Type placementType, AdSize adSize, GoogleMobileAds.Api.AdPosition adPosition)
+    public void RequestBanner(AdPlacement.Type placementType, AdSize adSize, GoogleMobileAds.Api.AdPosition adPosition, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
         string placementId = CustomMediation.GetAdmobID(placementType);
         if (this.currentBannerAd == null)
         {
             AdMobManager.bannerId = placementId;
             // Create a smart banner at the bottom of the screen.
-            currentBannerAd = new AdmobBannerAdObject(placementType, null);
+            currentBannerAd = new AdmobBannerAdObject(placementType, onAdLoaded);
             currentBannerAd.BannerView = new BannerView(placementId, adSize, adPosition);
 
             // Load a banner ad.
@@ -196,7 +196,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     void OnBannerAdsLoaded(object sender, EventArgs args)
     {
-        if (this.currentBannerAd != null)
+        if (this.currentBannerAd != null && currentBannerAd.State != AdObjectState.Closed)
         {
             currentBannerAd.BannerView.Show();
             currentBannerAd.State = AdObjectState.Showing;
@@ -275,7 +275,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         {
             GetCurrentBannerAdObject().BannerView.Hide();
         }
-        GetCurrentBannerAdObject().State = AdObjectState.Ready;
+        GetCurrentBannerAdObject().State = AdObjectState.Closed;
     }
 
     private AdmobBannerAdObject GetCurrentBannerAdObject(bool makeNewIfNull = true)
@@ -348,7 +348,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         {
             //.Log(string.Format("destroying current banner({0} {1}), showing new one", AdsManager.bannerId, currentBannerSize));
             DestroyBanner();
-            RequestBanner(placementType, adSize, adPosition);
+            RequestBanner(placementType, adSize, adPosition, onAdLoaded);
         }
     }
 
