@@ -6,6 +6,7 @@ using GoogleMobileAds.Api;
 using System;
 using UnityEngine.Networking;
 using Omnilatent.AdMob;
+using Omnilatent.AdsMediation;
 
 /* CHANGE LOG:
  * 27/7/2020: Add timeout load to RequestInterstitialNoShow
@@ -162,7 +163,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     }
 
     #region Banner
-    public void RequestBanner(string placementId, AdSize adSize, AdPosition adPosition)
+    public void RequestBanner(string placementId, AdSize adSize, GoogleMobileAds.Api.AdPosition adPosition)
     {
         if (this.bannerView == null)
         {
@@ -202,7 +203,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         }
     }
 
-    public void ShowBanner(string placementId, AdSize adSize, AdPosition adPosition, float delay = 0f, AdsManager.InterstitialDelegate onAdLoaded = null)
+    public void ShowBanner(string placementId, AdSize adSize, GoogleMobileAds.Api.AdPosition adPosition, float delay = 0f, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
         if (noAds != null && noAds())
         {
@@ -301,7 +302,11 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
         string id = CustomMediation.GetAdmobID(placementType);
-        AdPosition adPosition = (AdPosition)bannerTransform.adPosition;
+        GoogleMobileAds.Api.AdPosition adPosition = GoogleMobileAds.Api.AdPosition.Bottom;
+        if (bannerTransform.adPosition != Omnilatent.AdsMediation.AdPosition.Unset)
+        {
+            adPosition = (GoogleMobileAds.Api.AdPosition)bannerTransform.adPosition;
+        }
         ShowBanner(id, AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth), adPosition, 0f, onAdLoaded);
     }
 
