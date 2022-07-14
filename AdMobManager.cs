@@ -271,11 +271,11 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     {
         CancelInvoke("CoShowBanner");
 
-        if (GetCurrentBannerAdObject().BannerView != null)
+        if (currentBannerAd != null && currentBannerAd.BannerView != null)
         {
-            GetCurrentBannerAdObject().BannerView.Hide();
+            currentBannerAd.BannerView.Hide();
+            currentBannerAd.State = AdObjectState.Closed;
         }
-        GetCurrentBannerAdObject().State = AdObjectState.Closed;
     }
 
     private AdmobBannerAdObject GetCurrentBannerAdObject(bool makeNewIfNull = true)
