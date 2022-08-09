@@ -206,7 +206,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     void OnBannerPaidEvent(object sender, AdValueEventArgs args)
     {
-        onBannerPaidEvent?.Invoke(GetCurrentBannerAdObject().AdPlacementType, args);
+        QueueMainThreadExecution(() => { onBannerPaidEvent?.Invoke(GetCurrentBannerAdObject().AdPlacementType, args); });
     }
 
     public void DestroyBanner()
