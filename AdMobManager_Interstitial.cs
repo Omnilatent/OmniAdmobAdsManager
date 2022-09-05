@@ -162,6 +162,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         {
             this.interstitial.OnAdLoaded -= HandleInterstitialLoadedNoShow;
             this.interstitial.OnAdFailedToLoad -= HandleInterstitialFailedToLoadNoShow;
+            onInterstitialFailedToLoad?.Invoke(loadingInterstitialAdObj.placementType, args as AdFailedToLoadEventArgs);
             OnInterstitialLoaded(false);
             lastInterstitialRequestIsFailed = true;
             ShowError(args);
