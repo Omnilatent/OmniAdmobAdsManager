@@ -1,3 +1,10 @@
+## 1.5.4
+Changes:
+- Move unity main thread dispatcher back to Omni Ads Manager because MAX & Iron Source Ad Wrapper depend on it.
+
+Fixes:
+- Call On interstitial load failed callback on interstitial load failed.
+
 ## 1.5.3
 Changes:
 - Add Admob Banner Ad Object to store additional banner value easier. Rewrite banner function to use new Admob Banner Ad Object. Deprecate some banner event and field.
