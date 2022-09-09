@@ -188,20 +188,26 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     void OnBannerAdsFailedToLoad(object sender, AdFailedToLoadEventArgs args)
     {
-        ShowError(args);
-        GetCurrentBannerAdObject().onAdLoaded?.Invoke(false);
-        onBannerFailedToLoad?.Invoke(GetCurrentBannerAdObject().AdPlacementType, args);
-        DestroyBanner();
+        QueueMainThreadExecution(() =>
+        {
+            ShowError(args);
+            GetCurrentBannerAdObject().onAdLoaded?.Invoke(false);
+            onBannerFailedToLoad?.Invoke(GetCurrentBannerAdObject().AdPlacementType, args);
+            DestroyBanner();
+        });
     }
 
     void OnBannerAdsLoaded(object sender, EventArgs args)
     {
-        if (this.currentBannerAd != null && currentBannerAd.State != AdObjectState.Closed)
+        QueueMainThreadExecution(() =>
         {
-            currentBannerAd.BannerView.Show();
-            currentBannerAd.State = AdObjectState.Showing;
-        }
-        GetCurrentBannerAdObject().onAdLoaded?.Invoke(true);
+            if (this.currentBannerAd != null && currentBannerAd.State != AdObjectState.Closed)
+            {
+                currentBannerAd.BannerView.Show();
+                currentBannerAd.State = AdObjectState.Showing;
+            }
+            GetCurrentBannerAdObject().onAdLoaded?.Invoke(true);
+        });
     }
 
     void OnBannerPaidEvent(object sender, AdValueEventArgs args)
