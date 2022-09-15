@@ -1,3 +1,7 @@
+## 1.5.5
+Fixes:
+- Fix banner ad load failed and loaded callback not called in main thread.
+
 ## 1.5.4
 Changes:
 - Move unity main thread dispatcher back to Omni Ads Manager because MAX & Iron Source Ad Wrapper depend on it.
