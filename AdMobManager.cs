@@ -343,7 +343,9 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         }
         //ShowBanner(id, AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth), adPosition, 0f, onAdLoaded);
 
-        var adSize = AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth);
+        AdSize adSize = bannerTransform.adSizeData as AdSize;
+        if (adSize == null) { adSize = AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth); }
+
         if (currentBannerAd != null && currentBannerAd.AdPlacementType == placementType)
         {
             onAdLoaded?.Invoke(true);
