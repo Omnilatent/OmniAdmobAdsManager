@@ -46,6 +46,9 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     [Obsolete] public AdsManager.InterstitialDelegate bannerLoadedDelegate;
     public Action<AdPlacement.Type, AdFailedToLoadEventArgs> onBannerFailedToLoad;
     public Action<AdPlacement.Type, AdValueEventArgs> onBannerPaidEvent;
+    public Action<AdPlacement.Type, EventArgs> onBannerLoaded;
+    public Action<AdPlacement.Type> onBannerShow;
+    public Action<AdPlacement.Type> onBannerHide;
 
 
     private static AdMobManager _instance;
@@ -205,8 +208,10 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             {
                 currentBannerAd.BannerView.Show();
                 currentBannerAd.State = AdObjectState.Showing;
+                onBannerShow?.Invoke(currentBannerAd.AdPlacementType);
             }
             GetCurrentBannerAdObject().onAdLoaded?.Invoke(true);
+            onBannerLoaded?.Invoke(currentBannerAd.AdPlacementType, args);
         });
     }
 
@@ -281,6 +286,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         {
             currentBannerAd.BannerView.Hide();
             currentBannerAd.State = AdObjectState.Closed;
+            onBannerHide?.Invoke(currentBannerAd.AdPlacementType);
         }
     }
 
@@ -351,6 +357,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             onAdLoaded?.Invoke(true);
             currentBannerAd.BannerView.Show();
             currentBannerAd.State = AdObjectState.Showing;
+            onBannerShow?.Invoke(currentBannerAd.AdPlacementType);
         }
         else
         {
