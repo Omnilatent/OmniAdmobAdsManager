@@ -1,3 +1,11 @@
+## 1.5.6
+News:
+- Add callback on banner loaded, show, hide.
+
+Changes:
+- Banner: get AdSize data from BannerTransform.
+- Remove Unity main thread dispatcher and move it to Ads Manager since MAX manager use Unity main thread dispatcher.
+
 ## 1.5.5
 Fixes:
 - Fix banner ad load failed and loaded callback not called in main thread.
