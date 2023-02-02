@@ -79,7 +79,7 @@ namespace Omnilatent.AdMob
             adQueue.Add(cacheContainer);
             AdRequest request = new AdRequest.Builder().Build();
             newAd.LoadAd(request);
-            Debug.Log($"Preload {placementType}. adQueue size {adQueue.Count}");
+            //.Log($"Preload {placementType}. adQueue size {adQueue.Count}");
         }
 
         static void AddCallbackToRewardVideo(RewardedAd newAd, CachedAdContainer container)
@@ -90,7 +90,7 @@ namespace Omnilatent.AdMob
                 {
                     CheckAdQueueSizeAndPreload<RewardedAd>(container.placementId);
                     container.status = AdStatus.LoadSuccess;
-                    Debug.Log($"Ad {container.placementId} loaded success");
+                    //.Log($"Ad {container.placementId} loaded success");
                     AdMobManager.instance.onRewardAdLoaded?.Invoke(container.placementId, args);
                 });
             };
@@ -169,7 +169,7 @@ namespace Omnilatent.AdMob
             var adQueue = GetCachedAdContainerList<RewardedAd>(placementType, false);
             if (adQueue == null || adQueue.Count == 0)
             {
-                Debug.Log($"CacheAdmod: Cached ad list of '{placementType}' not found. Initializing.");
+                //.Log($"CacheAdmod: Cached ad list of '{placementType}' not found. Initializing.");
                 PreloadRewardAd(placementType);
                 rewardedAd = null;
                 return AdStatus.Loading;
@@ -245,7 +245,7 @@ namespace Omnilatent.AdMob
                     }
                 });
             });
-            Debug.Log($"Preload {placementType}. adQueue size {adQueue.Count}");
+            //.Log($"Preload {placementType}. adQueue size {adQueue.Count}");
         }
 
         //Generic Ad Load
@@ -275,7 +275,7 @@ namespace Omnilatent.AdMob
             var adQueue = GetCachedAdContainerList<T>(placementType, false);
             if (adQueue == null || adQueue.Count == 0)
             {
-                Debug.Log($"CacheAdmod: Cached ad list of '{placementType}' not found. Initializing.");
+                //.Log($"CacheAdmod: Cached ad list of '{placementType}' not found. Initializing.");
                 PreloadAd<T>(placementType);
                 adReady = null;
                 return AdStatus.Loading;
