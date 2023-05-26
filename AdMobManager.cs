@@ -75,6 +75,8 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     private RewardResult rewardResult;
 
+    [SerializeField] private bool forceRewardAdLoadSuccessOnEditor; //fix Prefab Ad is null error on editor
+
     [Obsolete]
     public bool isShowBanner
     {
@@ -371,6 +373,13 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     {
         string id = CustomMediation.GetAdmobID(placementId);
         //RewardAdmob(onFinish, id);
+        #if UNITY_EDITOR
+        if (forceRewardAdLoadSuccessOnEditor)
+        {
+            onFinish?.Invoke(new RewardResult(RewardResult.Type.Finished));
+            return;
+        }
+        #endif
         ShowCachedRewardedAd(placementId, onFinish);
     }
 
