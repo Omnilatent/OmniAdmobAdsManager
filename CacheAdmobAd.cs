@@ -204,7 +204,7 @@ namespace Omnilatent.AdMob
                 int failedCount = 0, adQueueSizeBeforeCheck = adQueue.Count;
                 for (int i = adQueue.Count - 1; i >= 0; i--)
                 {
-                    if (adQueue[i].GetRewardedAd().IsLoaded())
+                    if (adQueue[i].GetRewardedAd().CanShowAd())
                     {
                         rewardedAd = (RewardedAd)adQueue[i].ad;
                         adQueue.RemoveAt(i);

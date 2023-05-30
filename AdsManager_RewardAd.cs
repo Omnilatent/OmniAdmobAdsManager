@@ -12,106 +12,14 @@ public partial class AdMobManager : MonoBehaviour
 
     public Action<AdPlacement.Type, EventArgs> onRewardAdLoaded;
     public Action<AdPlacement.Type> onRewardAdOpening;
-    public Action<AdPlacement.Type, EventArgs> onRewardAdClosed;
+    public Action<AdPlacement.Type> onRewardAdClosed;
     public Action<AdPlacement.Type, AdError> onRewardAdFailedToShow;
     public Action<AdPlacement.Type> onRewardAdDidRecordImpression;
     public Action<AdPlacement.Type, LoadAdError> onRewardAdFailedToLoad;
     public Action<AdPlacement.Type, AdValue> onRewardAdPaidEvent;
     public Action<AdPlacement.Type, Reward> onRewardAdUserEarnReward;
 
-    public static void RewardAdmob(RewardDelegate onFinish, string rewardVideoAdId = AdMobConst.REWARD_ID)
-    {
-        /*#if UNITY_EDITOR
-                onFinish(new RewardResult(RewardResult.Type.Finished));
-        #else*/
-        if (AdsManager.HasNoInternet()) { onFinish(new RewardResult(RewardResult.Type.LoadFailed, AdMobConst.noInternetConnectionMsg)); }
-        else if (AdMobManager.instance != null)
-        {
-            AdMobManager.instance.ShowRewardBasedVideo((rewarded) =>
-            {
-                onFinish(rewarded);
-            }, rewardVideoAdId);
-        }
-    }
-
-    public void ShowRewardBasedVideo(RewardDelegate onVideoCompleted = null, string rewardVideoAdId = AdMobConst.REWARD_ID)
-    {
-        if (onVideoCompleted != null)
-        {
-            this.adsVideoRewardedCallback = onVideoCompleted;
-        }
-
-        //Start loading reward
-        //this.reward = false;
-        rewardResult = new RewardResult(RewardResult.Type.Canceled);
-
-        if (this.rewardBasedVideo != null && this.rewardBasedVideo.IsLoaded())
-        {
-            this.showingAds = true;
-            this.rewardBasedVideo.Show();
-            return;
-        }
-
-        this.rewardBasedVideo = RequestRewardBasedVideo(rewardVideoAdId);
-        StopCoTimeoutLoadReward();
-        timeoutLoadRewardCoroutine = StartCoroutine(CoTimeoutLoadReward(() =>
-        {
-            LoadAdError loadAdError = new LoadAdError(new Omnilatent.AdMob.CustomLoadAdErrorClient("Self Timeout"));
-            RewardBasedVideo_OnAdFailedToLoad(null, new AdFailedToLoadEventArgs() { LoadAdError = loadAdError });
-        }));
-    }
-
-    public RewardedAd RequestRewardBasedVideo(string rewardVideoAdId)
-    {
-        var rewardBasedVideo = new RewardedAd(rewardVideoAdId);
-        AddCallbackToRewardVideo(rewardBasedVideo);
-        AdRequest request = new AdRequest.Builder().Build();
-        rewardBasedVideo.LoadAd(request);
-        return rewardBasedVideo;
-    }
-
-    void AddCallbackToRewardVideo(RewardedAd rewardBasedVideo)
-    {
-        rewardBasedVideo.OnAdLoaded += RewardBasedVideo_OnAdLoaded;
-        rewardBasedVideo.OnAdFailedToLoad += RewardBasedVideo_OnAdFailedToLoad;
-        rewardBasedVideo.OnAdClosed += HandleRewardedAdClosed;
-        rewardBasedVideo.OnUserEarnedReward += HandleUserEarnedReward;
-    }
-
     #region Callback
-    void RewardBasedVideo_OnAdFailedToLoad(object sender, AdFailedToLoadEventArgs e)
-    {
-        QueueMainThreadExecution((Action)(() =>
-        {
-            //Finish loading, return load failed
-
-            rewardResult.type = RewardResult.Type.LoadFailed;
-            rewardResult.message = e.LoadAdError.GetMessage();
-            CallVideoRewared();
-            this.rewardBasedVideo.OnAdLoaded -= this.RewardBasedVideo_OnAdLoaded;
-            this.rewardBasedVideo.OnAdFailedToLoad -= this.RewardBasedVideo_OnAdFailedToLoad;
-            this.rewardBasedVideo.OnAdClosed -= HandleRewardedAdClosed;
-            this.rewardBasedVideo.OnUserEarnedReward -= HandleUserEarnedReward;
-            this.rewardBasedVideo.Destroy();
-            this.rewardBasedVideo = null;
-            string logMessage = $"Admob_RewardLoadFail_{e.LoadAdError.GetMessage()}";
-            LogEvent(logMessage);
-            Debug.Log(logMessage);
-        }));
-    }
-
-    void RewardBasedVideo_OnAdLoaded(object sender, EventArgs e)
-    {
-        QueueMainThreadExecution((Action)(() =>
-        {
-            this.rewardBasedVideo.OnAdLoaded -= this.RewardBasedVideo_OnAdLoaded;
-            this.rewardBasedVideo.OnAdFailedToLoad -= this.RewardBasedVideo_OnAdFailedToLoad;
-            StopCoTimeoutLoadReward();
-            //Manager.LoadingAnimation(false);
-
-            ShowRewardBasedVideo();
-        }));
-    }
 
     void HandleRewardedAdClosed(object sender, EventArgs e)
     {
@@ -149,7 +57,6 @@ public partial class AdMobManager : MonoBehaviour
 
     void HandleRewardedAdLoaded(object sender, EventArgs args)
     {
-
     }
 
     void HandleVideoCompleted(object sender, EventArgs args)
@@ -169,6 +76,7 @@ public partial class AdMobManager : MonoBehaviour
             rewardResult.type = RewardResult.Type.Finished;
         });
     }
+
     #endregion
 
     IEnumerator CoTimeoutLoadReward(Action onTimeout)
@@ -178,6 +86,7 @@ public partial class AdMobManager : MonoBehaviour
             var delay = new WaitForSeconds(TIMEOUT_LOADREWARDAD);
             yield return delay;
         }
+
         onTimeout.Invoke();
         timeoutLoadRewardCoroutine = null;
     }
@@ -189,12 +98,6 @@ public partial class AdMobManager : MonoBehaviour
             StopCoroutine(timeoutLoadRewardCoroutine);
             timeoutLoadRewardCoroutine = null;
         }
-    }
-
-    public void RequestRewardAd(AdPlacement.Type placementType, RewardDelegate onLoaded)
-    {
-        string id = CustomMediation.GetAdmobID(placementType);
-        RequestRewardBasedVideo(id);
     }
 
     public void ShowCachedRewardedAd(AdPlacement.Type placementType, RewardDelegate onFinish)
@@ -228,15 +131,7 @@ public partial class AdMobManager : MonoBehaviour
 #if UNITY_EDITOR
                 rewardResult.type = RewardResult.Type.Finished;
 #endif
-                rewardedAd.OnUserEarnedReward += (sender, reward) =>
-                {
-                    QueueMainThreadExecution(() =>
-                    {
-                        rewardResult.type = RewardResult.Type.Finished;
-                        onRewardAdUserEarnReward?.Invoke(placementType, reward);
-                    });
-                };
-                rewardedAd.OnAdClosed += (sender, e) =>
+                rewardedAd.OnAdFullScreenContentClosed += () =>
                 {
                     QueueMainThreadExecution(() =>
                     {
@@ -244,12 +139,19 @@ public partial class AdMobManager : MonoBehaviour
                         onFinish.Invoke(rewardResult);
                         rewardedAd.Destroy();
                         CacheAdmobAd.CheckAdQueueSizeAndPreload<RewardedAd>(placementType);
-                        onRewardAdClosed?.Invoke(placementType, e);
+                        onRewardAdClosed?.Invoke(placementType);
                     });
                 };
 
                 this.showingAds = true;
-                rewardedAd.Show();
+                rewardedAd.Show((Reward reward) =>
+                {
+                    QueueMainThreadExecution(() =>
+                    {
+                        rewardResult.type = RewardResult.Type.Finished;
+                        onRewardAdUserEarnReward?.Invoke(placementType, reward);
+                    });
+                });
                 break;
             }
             else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
@@ -263,10 +165,10 @@ public partial class AdMobManager : MonoBehaviour
                     Debug.Log($"No ad of '{placementType}' is ready yet. Wating.");
                     loggedLoading = true;
                 }
+
                 yield return checkInterval; //TODO: add option to break in case game want to continue instead of waiting for ad ready
             }
-        }
-        while (cacheAdState == CacheAdmobAd.AdStatus.Loading && !timedOut);
+        } while (cacheAdState == CacheAdmobAd.AdStatus.Loading && !timedOut);
 
         StopCoTimeoutLoadReward();
 
@@ -293,6 +195,7 @@ public partial class AdMobManager : MonoBehaviour
             {
                 rewardResult = new RewardResult(RewardResult.Type.Loading, AdMobConst.loadingRewardAdMsg);
             }
+
             onFinish?.Invoke(rewardResult);
         }
         //.Log($"Wait ad load cacheAdState: {cacheAdState}");
