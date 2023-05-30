@@ -18,13 +18,14 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     AdObject currentInterstitialAdObj = new AdObject();
     AdObject loadingInterstitialAdObj = new AdObject();
 
-    public Action<AdPlacement.Type, EventArgs> onInterstitialLoaded;
-    public Action<AdPlacement.Type, AdFailedToLoadEventArgs> onInterstitialFailedToLoad;
-    public Action<AdPlacement.Type, EventArgs> onInterstitialOpening;
-    public Action<AdPlacement.Type, EventArgs> onInterstitialClosed;
-    public Action<AdPlacement.Type, AdErrorEventArgs> onInterstitialFailedToShow;
-    public Action<AdPlacement.Type, EventArgs> onInterstitialImpression;
-    public Action<AdPlacement.Type, AdValueEventArgs> onInterstitialPaidEvent;
+    public Action<AdPlacement.Type> onInterstitialLoaded;
+    public Action<AdPlacement.Type, AdError> onInterstitialFailedToLoad;
+    public Action<AdPlacement.Type> onInterstitialOpening;
+    public Action<AdPlacement.Type> onInterstitialClosed;
+    public Action<AdPlacement.Type, AdError> onInterstitialFailedToShow;
+    public Action<AdPlacement.Type> onInterstitialImpression;
+    public Action<AdPlacement.Type> onInterstitialClicked;
+    public Action<AdPlacement.Type, AdValue> onInterstitialPaidEvent;
 
     bool lastInterstitialRequestIsFailed = false;
 

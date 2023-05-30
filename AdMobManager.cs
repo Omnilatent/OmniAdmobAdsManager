@@ -36,7 +36,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     public delegate bool NoAdsDelegate();
     public NoAdsDelegate noAds;
-    [SerializeField] bool cacheInterstitial; //cache interstitial. Work with one single interstitial ad id
+    [SerializeField] internal bool cacheInterstitial; //cache interstitial. Work with one single interstitial ad id
 
     Coroutine coTimeoutLoad;
 
@@ -87,7 +87,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public float interstitialTime
     {
         get;
-        protected set;
+        internal set;
     }
 
     public float time
@@ -99,7 +99,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public bool showingAds
     {
         get;
-        protected set;
+        internal set;
     }
 
     #region Static
@@ -331,7 +331,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         }
     }
 
-    void LogEvent(string eventName)
+    internal void LogEvent(string eventName)
     {
         //FirebaseManager.LogEvent(eventName);
     }
