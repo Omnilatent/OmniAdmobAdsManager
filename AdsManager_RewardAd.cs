@@ -11,12 +11,12 @@ public partial class AdMobManager : MonoBehaviour
     Coroutine timeoutLoadRewardCoroutine;
 
     public Action<AdPlacement.Type, EventArgs> onRewardAdLoaded;
-    public Action<AdPlacement.Type, EventArgs> onRewardAdOpening;
+    public Action<AdPlacement.Type> onRewardAdOpening;
     public Action<AdPlacement.Type, EventArgs> onRewardAdClosed;
-    public Action<AdPlacement.Type, AdErrorEventArgs> onRewardAdFailedToShow;
-    public Action<AdPlacement.Type, EventArgs> onRewardAdDidRecordImpression;
-    public Action<AdPlacement.Type, AdFailedToLoadEventArgs> onRewardAdFailedToLoad;
-    public Action<AdPlacement.Type, AdValueEventArgs> onRewardAdPaidEvent;
+    public Action<AdPlacement.Type, AdError> onRewardAdFailedToShow;
+    public Action<AdPlacement.Type> onRewardAdDidRecordImpression;
+    public Action<AdPlacement.Type, LoadAdError> onRewardAdFailedToLoad;
+    public Action<AdPlacement.Type, AdValue> onRewardAdPaidEvent;
     public Action<AdPlacement.Type, Reward> onRewardAdUserEarnReward;
 
     public static void RewardAdmob(RewardDelegate onFinish, string rewardVideoAdId = AdMobConst.REWARD_ID)

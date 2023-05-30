@@ -45,7 +45,7 @@ namespace Omnilatent.AdMob
             public bool IsAdLoaded()
             {
                 if (TypeIsAppOpenAd(admobType)) { return ad != null; }
-                else if (TypeIsRewardedAd(admobType)) { return GetRewardedAd().IsLoaded(); }
+                else if (TypeIsRewardedAd(admobType)) { return GetRewardedAd().CanShowAd(); }
                 throw new Exception("Unhandled type of ad. Only App Open and Rewarded Ad is supported.");
             }
 
@@ -73,18 +73,38 @@ namespace Omnilatent.AdMob
         {
             List<CachedAdContainer> adQueue = GetCachedAdContainerList<RewardedAd>(placementType, true);
             string id = CustomMediation.GetAdmobID(placementType);
-            var newAd = new RewardedAd(id);
-            CachedAdContainer cacheContainer = new CachedAdContainer(placementType, newAd, typeof(RewardedAd));
-            AddCallbackToRewardVideo(newAd, cacheContainer);
+            var request = new AdRequest();
+            CachedAdContainer cacheContainer = new CachedAdContainer(placementType, null, typeof(RewardedAd));
             adQueue.Add(cacheContainer);
-            AdRequest request = new AdRequest.Builder().Build();
-            newAd.LoadAd(request);
+            RewardedAd.Load(id, request, (newAd, error) =>
+            {
+                AdMobManager.QueueMainThreadExecution(() =>
+                {
+                    if (error == null)
+                    {
+                        AddCallbackToRewardVideo(newAd, cacheContainer);
+                        cacheContainer.ad = newAd;
+                        CheckAdQueueSizeAndPreload<RewardedAd>(cacheContainer.placementId);
+                        cacheContainer.status = AdStatus.LoadSuccess;
+                        //.Log($"Ad {container.placementId} loaded success");
+                        AdMobManager.instance.onRewardAdLoaded?.Invoke(cacheContainer.placementId, null);
+                    }
+                    else
+                    {
+                        cacheContainer.status = AdStatus.LoadFailed;
+                        cacheContainer.DestroyAd();
+                        //GetCachedAdContainerList(container.placementId, false).Remove(container);
+                        Debug.Log($"Ad {cacheContainer.placementId} loaded failed");
+                        AdMobManager.instance.onRewardAdFailedToLoad?.Invoke(cacheContainer.placementId, error);
+                    }
+                });
+            });
             //.Log($"Preload {placementType}. adQueue size {adQueue.Count}");
         }
 
         static void AddCallbackToRewardVideo(RewardedAd newAd, CachedAdContainer container)
         {
-            newAd.OnAdLoaded += (object sender, EventArgs args) =>
+            /*newAd.OnAdLoaded += (object sender, EventArgs args) =>
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
@@ -93,8 +113,8 @@ namespace Omnilatent.AdMob
                     //.Log($"Ad {container.placementId} loaded success");
                     AdMobManager.instance.onRewardAdLoaded?.Invoke(container.placementId, args);
                 });
-            };
-            newAd.OnAdFailedToLoad += (object sender, AdFailedToLoadEventArgs e) =>
+            };*/
+            /*newAd.OnAdFailedToLoad += (object sender, AdFailedToLoadEventArgs e) =>
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
@@ -104,33 +124,33 @@ namespace Omnilatent.AdMob
                     Debug.Log($"Ad {container.placementId} loaded failed");
                     AdMobManager.instance.onRewardAdFailedToLoad?.Invoke(container.placementId, e);
                 });
-            };
-            newAd.OnAdFailedToShow += (sender, e) =>
+            };*/
+            newAd.OnAdFullScreenContentFailed += (e) =>
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
                     AdMobManager.instance.onRewardAdFailedToShow?.Invoke(container.placementId, e);
                 });
             };
-            newAd.OnAdDidRecordImpression += (sender, e) =>
+            newAd.OnAdImpressionRecorded += () =>
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
-                    AdMobManager.instance.onRewardAdDidRecordImpression?.Invoke(container.placementId, e);
+                    AdMobManager.instance.onRewardAdDidRecordImpression?.Invoke(container.placementId);
                 });
             };
-            newAd.OnAdOpening += (sender, e) =>
+            newAd.OnAdFullScreenContentOpened += () =>
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
-                    AdMobManager.instance.onRewardAdOpening?.Invoke(container.placementId, e);
+                    AdMobManager.instance.onRewardAdOpening?.Invoke(container.placementId);
                 });
             };
-            newAd.OnPaidEvent += (sender, e) =>
+            newAd.OnAdPaid += (adValue) =>
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
-                    AdMobManager.instance.onRewardAdPaidEvent?.Invoke(container.placementId, e);
+                    AdMobManager.instance.onRewardAdPaidEvent?.Invoke(container.placementId, adValue);
                 });
             };
         }
