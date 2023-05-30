@@ -242,16 +242,16 @@ namespace Omnilatent.AdMob
 
             AdRequest request = new AdRequest.Builder().Build();
             // Load an app open ad for portrait orientation
-            AppOpenAd.LoadAd(id, Screen.orientation, request, (newAppOpenAd, error) =>
+            AppOpenAd.Load(id, Screen.orientation, request, (newAppOpenAd, error) =>
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
                     if (error != null)
                     {
                         // Handle the error.
-                        Debug.LogFormat("Failed to load the ad {1}. (reason: {0})", error.LoadAdError.GetMessage(), cacheContainer.placementId);
+                        Debug.LogFormat("Failed to load the ad {1}. (reason: {0})", error.GetMessage(), cacheContainer.placementId);
                         onAdLoaded?.Invoke(new RewardResult(RewardResult.Type.LoadFailed));
-                        AdsManager.LogError($"[{cacheContainer.placementId}]-id:'{id}' load failed.{error.LoadAdError.GetMessage()}", cacheContainer.placementId.ToString());
+                        AdsManager.LogError($"[{cacheContainer.placementId}]-id:'{id}' load failed.{error.GetMessage()}", cacheContainer.placementId.ToString());
 
                         cacheContainer.status = AdStatus.LoadFailed;
                         cacheContainer.DestroyAd();
