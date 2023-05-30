@@ -155,6 +155,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             go.AddComponent<UnityMainThreadDispatcher>();
         }
         //Debug.Log("OS: " + Application.platform + ". RAM: " + SystemInfo.systemMemorySize);
+        _interstitialWrapper = new InterstitialWrapper(this);
     }
 
     /*private void Update()
@@ -313,13 +314,13 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         return (this.interstitial == null);
     }
 
-    IEnumerator CoTimeoutLoadInterstitial()
+    /*IEnumerator CoTimeoutLoadInterstitial()
     {
         var delay = new WaitForSeconds(TIMEOUT_LOADAD);
         yield return delay;
         LoadAdError loadAdError = new LoadAdError(new Omnilatent.AdMob.CustomLoadAdErrorClient("Self Timeout"));
         HandleInterstitialFailedToLoadNoShow(null, new AdFailedToLoadEventArgs() { LoadAdError = loadAdError }); ;
-    }
+    }*/
     #endregion
 
     void ShowError(EventArgs args, string prefix = "ad")
@@ -394,4 +395,27 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         action.Invoke();
 #endif
     }
+
+    #region Interstitial
+    public Action<AdPlacement.Type> onInterstitialLoaded;
+    public Action<AdPlacement.Type, AdError> onInterstitialFailedToLoad;
+    public Action<AdPlacement.Type> onInterstitialOpening;
+    public Action<AdPlacement.Type> onInterstitialClosed;
+    public Action<AdPlacement.Type, AdError> onInterstitialFailedToShow;
+    public Action<AdPlacement.Type> onInterstitialImpression;
+    public Action<AdPlacement.Type> onInterstitialClicked;
+    public Action<AdPlacement.Type, AdValue> onInterstitialPaidEvent;
+
+    private InterstitialWrapper _interstitialWrapper;
+
+    public void ShowInterstitial(AdPlacement.Type placementType, AdsManager.InterstitialDelegate onAdClosed)
+    {
+        _interstitialWrapper.ShowInterstitial(placementType, onAdClosed);
+    }
+
+    public void RequestInterstitialNoShow(AdPlacement.Type placementType, AdsManager.InterstitialDelegate onAdLoaded = null, bool showLoading = true)
+    {
+        _interstitialWrapper.RequestInterstitialNoShow(placementType, onAdLoaded, showLoading);
+    }
+    #endregion
 }

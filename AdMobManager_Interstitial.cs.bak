@@ -5,30 +5,21 @@ using GoogleMobileAds.Api;
 using System;
 using Omnilatent.AdMob;
 
-public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
+public partial class AdMobManager : MonoBehaviour
 {
+    #region Archived for References
+    /*
+    bool lastInterstitialRequestIsFailed = false;
     public delegate void InterstitialDelegate(bool isSuccess = false);
-
+    AdObject currentInterstitialAdObj = new AdObject();
+    AdObject loadingInterstitialAdObj = new AdObject();
     /// <summary>
     /// Act as intermediate to invoke onAdLoaded
     /// </summary>
     public AdsManager.InterstitialDelegate interstitialLoadedDelegate;
+
     public AdsManager.InterstitialDelegate interstitialFinishDelegate;
-
-    AdObject currentInterstitialAdObj = new AdObject();
-    AdObject loadingInterstitialAdObj = new AdObject();
-
-    public Action<AdPlacement.Type> onInterstitialLoaded;
-    public Action<AdPlacement.Type, AdError> onInterstitialFailedToLoad;
-    public Action<AdPlacement.Type> onInterstitialOpening;
-    public Action<AdPlacement.Type> onInterstitialClosed;
-    public Action<AdPlacement.Type, AdError> onInterstitialFailedToShow;
-    public Action<AdPlacement.Type> onInterstitialImpression;
-    public Action<AdPlacement.Type> onInterstitialClicked;
-    public Action<AdPlacement.Type, AdValue> onInterstitialPaidEvent;
-
-    bool lastInterstitialRequestIsFailed = false;
-
+    
     //IAdsNetworkHelper function
     public void RequestInterstitialNoShow(AdPlacement.Type placementId, AdsManager.InterstitialDelegate onAdLoaded = null, bool showLoading = true)
     {
@@ -138,6 +129,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             OnInterstitialFinish(false);
             Debug.LogError("Last Interstitial request failed. No ad to show.");
         }
+
         var e = new Exception($"Last Interstitial request of '{logOriginName}' didn't fail but no ad is ready, this should not happen.");
         Debug.LogException(e);
 #if !DISABLE_FIREBASE
@@ -155,7 +147,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         }
     }
 
-#region Callbacks
+    #region Callbacks
 
     void HandleInterstitialFailedToLoadNoShow(object sender, EventArgs args)
     {
@@ -200,6 +192,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             interstitialLoadedDelegate(isSuccess);
             interstitialLoadedDelegate = null;
         }
+
         if (coTimeoutLoad != null)
         {
             StopCoroutine(coTimeoutLoad);
@@ -250,5 +243,8 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             onInterstitialOpening?.Invoke(currentInterstitialAdObj.placementType, args);
         });
     }
-#endregion
+
+    #endregion
+*/
+    #endregion
 }

@@ -14,6 +14,8 @@ namespace Omnilatent.AdMob
 
         Omnilatent.AdsMediation.InterstitialAdObject loadingInterstitialAdObj = new Omnilatent.AdsMediation.InterstitialAdObject();
         Omnilatent.AdsMediation.InterstitialAdObject currentInterstitialAdObj = new Omnilatent.AdsMediation.InterstitialAdObject();
+        
+        Coroutine coTimeoutLoad;
 
         //IAdsNetworkHelper function
         public InterstitialWrapper(AdMobManager manager)
@@ -26,6 +28,7 @@ namespace Omnilatent.AdMob
             string id = CustomMediation.GetAdmobID(placementId);
             loadingInterstitialAdObj.AdPlacementType = placementId;
             loadingInterstitialAdObj.State = AdObjectState.Loading;
+            loadingInterstitialAdObj.onAdLoaded = onAdLoaded;
             RequestAdmobInterstitialNoShow(id, onAdLoaded, showLoading);
         }
 
@@ -48,6 +51,12 @@ namespace Omnilatent.AdMob
             InterstitialAd.Load(_adUnitId, adRequest,
                 (InterstitialAd ad, LoadAdError error) =>
                 {
+                    if (coTimeoutLoad != null)
+                    {
+                        m_Manager.StopCoroutine(coTimeoutLoad);
+                        coTimeoutLoad = null;
+                    }
+                    
                     // if error is not null, the load request failed.
                     if (error != null || ad == null)
                     {
@@ -64,6 +73,10 @@ namespace Omnilatent.AdMob
                     RegisterEventHandlers(ad, loadingInterstitialAdObj);
                     onAdLoaded?.Invoke(error == null);
                 });
+            
+            if (showLoading)
+                //Manager.LoadingAnimation(true);
+                coTimeoutLoad = m_Manager.StartCoroutine(CoTimeoutLoadInterstitial());
         }
 
         private void RegisterEventHandlers(InterstitialAd ad, InterstitialAdObject adObject)
@@ -145,6 +158,14 @@ namespace Omnilatent.AdMob
                 FirebaseManager.LogException(e);
 #endif
             }
+        }
+        
+        IEnumerator CoTimeoutLoadInterstitial()
+        {
+            var delay = new WaitForSeconds(AdMobManager.TIMEOUT_LOADAD);
+            yield return delay;
+            loadingInterstitialAdObj.onAdLoaded?.Invoke(false);
+            coTimeoutLoad = null;
         }
     }
 }
