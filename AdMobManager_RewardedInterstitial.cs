@@ -17,19 +17,19 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         string id = CustomMediation.GetAdmobID(placementType);
         if (rewardedInterstitialAd == null)
         {
-            RewardedInterstitialAd.LoadAd(id, request, (RewardedInterstitialAd ad, AdFailedToLoadEventArgs error) =>
+            RewardedInterstitialAd.Load(id, request, (RewardedInterstitialAd ad, LoadAdError error) =>
             {
                 if (error == null)
                 {
                     rewardedInterstitialAd = ad;
-                    rewardedInterstitialAd.OnAdFailedToPresentFullScreenContent += HandleAdFailedToPresent;
-                    rewardedInterstitialAd.OnAdDidDismissFullScreenContent += HandleAdDidDismiss;
-                    rewardedInterstitialAd.OnPaidEvent += HandlePaidEvent;
+                    rewardedInterstitialAd.OnAdFullScreenContentFailed += HandleAdFailedToPresent;
+                    rewardedInterstitialAd.OnAdFullScreenContentClosed += HandleAdDidDismiss;
+                    rewardedInterstitialAd.OnAdPaid += HandlePaidEvent;
                     onFinish?.Invoke(new RewardResult(RewardResult.Type.Finished));
                 }
                 else
                 {
-                    onFinish?.Invoke(new RewardResult(RewardResult.Type.LoadFailed, error.LoadAdError.GetMessage()));
+                    onFinish?.Invoke(new RewardResult(RewardResult.Type.LoadFailed, error.GetMessage()));
                 }
             });
         }
@@ -46,32 +46,32 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         AdRequest request = new AdRequest.Builder().Build();
         // Load the rewarded ad with the request.
         string id = CustomMediation.GetAdmobID(placementType);
-        RewardedInterstitialAd.LoadAd(id, request, (RewardedInterstitialAd ad, AdFailedToLoadEventArgs error) =>
+        RewardedInterstitialAd.Load(id, request, (RewardedInterstitialAd ad, LoadAdError error) =>
         {
             if (error == null)
             {
                 adsInterstitialRewardedCallback = onFinish;
 
                 rewardedInterstitialAd = ad;
-                rewardedInterstitialAd.OnAdFailedToPresentFullScreenContent += HandleAdFailedToPresent;
-                rewardedInterstitialAd.OnAdDidDismissFullScreenContent += HandleAdDidDismiss;
-                rewardedInterstitialAd.OnPaidEvent += HandlePaidEvent;
+                rewardedInterstitialAd.OnAdFullScreenContentFailed += HandleAdFailedToPresent;
+                rewardedInterstitialAd.OnAdFullScreenContentClosed += HandleAdDidDismiss;
+                rewardedInterstitialAd.OnAdPaid += HandlePaidEvent;
 
                 ShowInterstitialRewarded(placementType, onFinish);
             }
             else
             {
-                onFinish?.Invoke(new RewardResult(RewardResult.Type.LoadFailed, error.LoadAdError.GetMessage()));
+                onFinish?.Invoke(new RewardResult(RewardResult.Type.LoadFailed, error.GetMessage()));
             }
         });
     }
 
-    private void HandlePaidEvent(object sender, AdValueEventArgs e)
+    private void HandlePaidEvent(AdValue e)
     {
         Debug.Log("Rewarded interstitial ad has received a paid event.");
     }
 
-    private void HandleAdDidDismiss(object sender, EventArgs e)
+    private void HandleAdDidDismiss()
     {
         QueueMainThreadExecution(() =>
         {
@@ -85,7 +85,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         });
     }
 
-    private void HandleAdFailedToPresent(object sender, AdErrorEventArgs e)
+    private void HandleAdFailedToPresent(AdError e)
     {
         QueueMainThreadExecution(() =>
         {
