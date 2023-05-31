@@ -45,7 +45,10 @@ namespace Omnilatent.AdMob
             public bool IsAdLoaded()
             {
                 if (TypeIsAppOpenAd(admobType)) { return ad != null; }
-                else if (TypeIsRewardedAd(admobType)) { return GetRewardedAd().CanShowAd(); }
+                else if (TypeIsRewardedAd(admobType))
+                {
+                    return GetRewardedAd() != null && GetRewardedAd().CanShowAd();
+                }
                 throw new Exception("Unhandled type of ad. Only App Open and Rewarded Ad is supported.");
             }
 
@@ -204,7 +207,7 @@ namespace Omnilatent.AdMob
                 int failedCount = 0, adQueueSizeBeforeCheck = adQueue.Count;
                 for (int i = adQueue.Count - 1; i >= 0; i--)
                 {
-                    if (adQueue[i].GetRewardedAd().CanShowAd())
+                    if (adQueue[i].GetRewardedAd() != null && adQueue[i].GetRewardedAd().CanShowAd())
                     {
                         rewardedAd = (RewardedAd)adQueue[i].ad;
                         adQueue.RemoveAt(i);
