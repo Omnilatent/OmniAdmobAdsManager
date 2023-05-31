@@ -138,6 +138,8 @@ namespace Omnilatent.AdMob
                 m_Manager.LogEvent("InterstitialShow_" + logOriginName);
                 m_Manager.showingAds = true;
                 m_Manager.interstitialTime = m_Manager.time;
+                interstitialAd.OnAdFullScreenContentClosed += () => { AdMobManager.QueueMainThreadExecution(() => { onAdClosed?.Invoke(true); }); };
+                interstitialAd.OnAdFullScreenContentFailed += (error) => { AdMobManager.QueueMainThreadExecution(() => { onAdClosed?.Invoke(false); }); };
                 interstitialAd.Show();
 #if UNITY_EDITOR
                 onAdClosed?.Invoke(true);
