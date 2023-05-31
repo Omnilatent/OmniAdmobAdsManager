@@ -14,7 +14,7 @@ namespace Omnilatent.AdMob
 
         Omnilatent.AdsMediation.InterstitialAdObject loadingInterstitialAdObj = new Omnilatent.AdsMediation.InterstitialAdObject();
         Omnilatent.AdsMediation.InterstitialAdObject currentInterstitialAdObj = new Omnilatent.AdsMediation.InterstitialAdObject();
-        
+
         Coroutine coTimeoutLoad;
 
         //IAdsNetworkHelper function
@@ -51,29 +51,32 @@ namespace Omnilatent.AdMob
             InterstitialAd.Load(_adUnitId, adRequest,
                 (InterstitialAd ad, LoadAdError error) =>
                 {
-                    if (coTimeoutLoad != null)
+                    AdMobManager.QueueMainThreadExecution(() =>
                     {
-                        m_Manager.StopCoroutine(coTimeoutLoad);
-                        coTimeoutLoad = null;
-                    }
-                    
-                    // if error is not null, the load request failed.
-                    if (error != null || ad == null)
-                    {
-                        loadingInterstitialAdObj.State = AdObjectState.LoadFailed;
-                        Debug.LogError("interstitial ad failed to load an ad " + "with error : " + error);
-                    }
-                    else
-                    {
-                        loadingInterstitialAdObj.State = AdObjectState.Ready;
-                        // Debug.Log("Interstitial ad loaded with response : " + ad.GetResponseInfo());
-                        interstitialAd = ad;
-                    }
+                        if (coTimeoutLoad != null)
+                        {
+                            m_Manager.StopCoroutine(coTimeoutLoad);
+                            coTimeoutLoad = null;
+                        }
 
-                    RegisterEventHandlers(ad, loadingInterstitialAdObj);
-                    onAdLoaded?.Invoke(error == null);
+                        // if error is not null, the load request failed.
+                        if (error != null || ad == null)
+                        {
+                            loadingInterstitialAdObj.State = AdObjectState.LoadFailed;
+                            Debug.LogError("interstitial ad failed to load an ad " + "with error : " + error);
+                        }
+                        else
+                        {
+                            loadingInterstitialAdObj.State = AdObjectState.Ready;
+                            // Debug.Log("Interstitial ad loaded with response : " + ad.GetResponseInfo());
+                            interstitialAd = ad;
+                        }
+
+                        RegisterEventHandlers(ad, loadingInterstitialAdObj);
+                        onAdLoaded?.Invoke(error == null);
+                    });
                 });
-            
+
             if (showLoading)
                 //Manager.LoadingAnimation(true);
                 coTimeoutLoad = m_Manager.StartCoroutine(CoTimeoutLoadInterstitial());
@@ -84,32 +87,29 @@ namespace Omnilatent.AdMob
             // Raised when the ad is estimated to have earned money.
             ad.OnAdPaid += (AdValue adValue) =>
             {
-                m_Manager.onInterstitialPaidEvent?.Invoke(adObject.AdPlacementType, adValue);
+                AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialPaidEvent?.Invoke(adObject.AdPlacementType, adValue); });
             };
             // Raised when an impression is recorded for an ad.
             ad.OnAdImpressionRecorded += () =>
             {
-                m_Manager.onInterstitialImpression?.Invoke(adObject.AdPlacementType);
+                AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialImpression?.Invoke(adObject.AdPlacementType); });
             };
             // Raised when a click is recorded for an ad.
-            ad.OnAdClicked += () =>
-            {
-                m_Manager.onInterstitialClicked?.Invoke(adObject.AdPlacementType);
-            };
+            ad.OnAdClicked += () => { AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialClicked?.Invoke(adObject.AdPlacementType); }); };
             // Raised when an ad opened full screen content.
             ad.OnAdFullScreenContentOpened += () =>
             {
-                m_Manager.onInterstitialOpening?.Invoke(adObject.AdPlacementType);
+                AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialOpening?.Invoke(adObject.AdPlacementType); });
             };
             // Raised when the ad closed full screen content.
             ad.OnAdFullScreenContentClosed += () =>
             {
-                m_Manager.onInterstitialClosed?.Invoke(adObject.AdPlacementType);
+                AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialClosed?.Invoke(adObject.AdPlacementType); });
             };
             // Raised when the ad failed to open full screen content.
             ad.OnAdFullScreenContentFailed += (AdError error) =>
             {
-                m_Manager.onInterstitialFailedToShow?.Invoke(adObject.AdPlacementType, error);
+                AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialFailedToShow?.Invoke(adObject.AdPlacementType, error); });
             };
         }
 
@@ -119,10 +119,11 @@ namespace Omnilatent.AdMob
             currentInterstitialAdObj.AdPlacementType = placementId;
             ShowInterstitial(true, onAdClosed, m_Manager.cacheInterstitial, placementId.ToString());
         }
-        
+
         /// <param name="cacheNextInter">Cache next interstitial ads</param>
         /// <param name="logOriginName">For tracking where this interstitial came from</param>
-        public void ShowInterstitial(bool showLoading = true, AdsManager.InterstitialDelegate onAdClosed = null, bool cacheNextInter = false, string logOriginName = "")
+        public void ShowInterstitial(bool showLoading = true, AdsManager.InterstitialDelegate onAdClosed = null, bool cacheNextInter = false,
+            string logOriginName = "")
         {
             if (m_Manager.noAds != null && m_Manager.noAds())
             {
@@ -159,7 +160,7 @@ namespace Omnilatent.AdMob
 #endif
             }
         }
-        
+
         IEnumerator CoTimeoutLoadInterstitial()
         {
             var delay = new WaitForSeconds(AdMobManager.TIMEOUT_LOADAD);
