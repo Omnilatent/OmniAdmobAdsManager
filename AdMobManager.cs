@@ -35,12 +35,14 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public static string interstitialId;
 
     public delegate bool NoAdsDelegate();
+
     public NoAdsDelegate noAds;
     [SerializeField] internal bool cacheInterstitial; //cache interstitial. Work with one single interstitial ad id
 
     Coroutine coTimeoutLoad;
 
     public delegate void BoolDelegate(bool reward);
+
     public RewardDelegate adsVideoRewardedCallback; //For traditional Rewarded Video
 
     private static AdMobManager _instance;
@@ -54,6 +56,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
                 GameObject gO = Resources.Load<GameObject>("AdsManager");
                 _instance = Instantiate(gO).GetComponent<AdMobManager>();
             }
+
             return _instance;
         }
     }
@@ -69,30 +72,13 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     [SerializeField] private bool forceRewardAdLoadSuccessOnEditor; //fix Prefab Ad is null error on editor
 
-    [Obsolete]
-    public bool isShowBanner
-    {
-        get;
-        protected set;
-    }
+    [Obsolete] public bool isShowBanner { get; protected set; }
 
-    public float interstitialTime
-    {
-        get;
-        internal set;
-    }
+    public float interstitialTime { get; internal set; }
 
-    public float time
-    {
-        get;
-        protected set;
-    }
+    public float time { get; protected set; }
 
-    public bool showingAds
-    {
-        get;
-        internal set;
-    }
+    public bool showingAds { get; internal set; }
 
     #region Static
 
@@ -103,6 +89,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
                 newInterstitialId, interType);
         Manager.Load(InterstitialDummyController.INTERSTITIALDUMMY_SCENE_NAME, interstitialSceneData);
     }*/
+
     #endregion
 
     private void Awake()
@@ -146,9 +133,8 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             var go = new GameObject("UnityMainThreadDispatcher");
             go.AddComponent<UnityMainThreadDispatcher>();
         }
+
         //Debug.Log("OS: " + Application.platform + ". RAM: " + SystemInfo.systemMemorySize);
-        _bannerWrapper = new BannerWrapper(this);
-        _interstitialWrapper = new InterstitialWrapper(this);
     }
 
     /*private void Update()
@@ -184,54 +170,64 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     {
         string id = CustomMediation.GetAdmobID(placementId);
         //RewardAdmob(onFinish, id);
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         if (forceRewardAdLoadSuccessOnEditor)
         {
             onFinish?.Invoke(new RewardResult(RewardResult.Type.Finished));
             return;
         }
-        #endif
+#endif
         ShowCachedRewardedAd(placementId, onFinish);
     }
 
     public static void QueueMainThreadExecution(Action action)
     {
 #if UNITY_ANDROID
-        UnityMainThreadDispatcher.Instance().Enqueue(() =>
-        {
-            action.Invoke();
-        });
-#else 
+        UnityMainThreadDispatcher.Instance().Enqueue(() => { action.Invoke(); });
+#else
         action.Invoke();
 #endif
     }
-    
+
     #region Banner
+
     public Action<AdPlacement.Type, AdError> onBannerFailedToLoad;
     public Action<AdPlacement.Type, AdValue> onBannerPaidEvent;
     public Action<AdPlacement.Type> onBannerLoaded;
     public Action<AdPlacement.Type> onBannerShow;
     public Action<AdPlacement.Type> onBannerHide;
     private BannerWrapper _bannerWrapper;
-    
+
+    internal BannerWrapper bannerWrapper
+    {
+        get
+        {
+            if (_bannerWrapper == null)
+                _bannerWrapper = new BannerWrapper(this);
+            return _bannerWrapper;
+        }
+    }
+
     public void ShowBanner(AdPlacement.Type placementId, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
         ShowBanner(placementId, Omnilatent.AdsMediation.BannerTransform.defaultValue, onAdLoaded);
     }
 
-    public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform, AdsManager.InterstitialDelegate onAdLoaded = null)
+    public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform,
+        AdsManager.InterstitialDelegate onAdLoaded = null)
     {
-        _bannerWrapper.ShowBanner(placementType, bannerTransform, onAdLoaded);
+        bannerWrapper.ShowBanner(placementType, bannerTransform, onAdLoaded);
     }
 
     public void HideBanner()
     {
-        _bannerWrapper.HideBanner();
+        bannerWrapper.HideBanner();
     }
 
     #endregion
-    
+
     #region Interstitial
+
     public Action<AdPlacement.Type> onInterstitialLoaded;
     public Action<AdPlacement.Type, AdError> onInterstitialFailedToLoad;
     public Action<AdPlacement.Type> onInterstitialOpening;
@@ -243,14 +239,25 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     private InterstitialWrapper _interstitialWrapper;
 
+    internal InterstitialWrapper interstitialWrapper
+    {
+        get
+        {
+            if (_interstitialWrapper == null)
+                _interstitialWrapper = new InterstitialWrapper(this);
+            return _interstitialWrapper;
+        }
+    }
+
     public void ShowInterstitial(AdPlacement.Type placementType, AdsManager.InterstitialDelegate onAdClosed)
     {
-        _interstitialWrapper.ShowInterstitial(placementType, onAdClosed);
+        interstitialWrapper.ShowInterstitial(placementType, onAdClosed);
     }
 
     public void RequestInterstitialNoShow(AdPlacement.Type placementType, AdsManager.InterstitialDelegate onAdLoaded = null, bool showLoading = true)
     {
-        _interstitialWrapper.RequestInterstitialNoShow(placementType, onAdLoaded, showLoading);
+        interstitialWrapper.RequestInterstitialNoShow(placementType, onAdLoaded, showLoading);
     }
+
     #endregion
 }
