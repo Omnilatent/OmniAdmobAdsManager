@@ -38,8 +38,16 @@ namespace Omnilatent.AdMob
             // Clean up the old ad before loading a new one.
             if (interstitialAd != null)
             {
-                interstitialAd.Destroy();
-                interstitialAd = null;
+                if (interstitialAd.CanShowAd())
+                {
+                    onAdLoaded?.Invoke(true);
+                    return;
+                }
+                else
+                {
+                    interstitialAd.Destroy();
+                    interstitialAd = null;
+                }
             }
 
             Debug.Log("Loading the interstitial ad.");
