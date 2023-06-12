@@ -103,7 +103,11 @@ namespace Omnilatent.AdMob
         {
             if (this.currentBannerAd != null)
             {
-                currentBannerAd.BannerView.Destroy();
+                if (currentBannerAd.BannerView != null)
+                {
+                    currentBannerAd.BannerView.Destroy();
+                }
+
                 currentBannerAd.BannerView = null;
                 currentBannerAd = null;
             }
