@@ -1,3 +1,11 @@
+## 1.6.0
+News:
+- Support Google Admob SDK 8.2.0+.
+
+Change dependency: Requires Omni Ads Manager 2.8.x.
+
+Upgrade guide: Import Omni Ads Manager's Extra package and import file HandleAdmobManagerMessage_8.x.cs to handle callbacks from new Admob API.
+
 ## 1.5.6
 News:
 - Add callback on banner loaded, show, hide.
