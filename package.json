@@ -1,7 +1,7 @@
 {
     "name": "com.omnilatent.admobmanager",
     "displayName": "Omni Admob Ads Manager Module",
-    "version": "1.5.6",
+    "version": "1.6.0",
     "unity": "2018.1",
     "description": "Module for managing Admob\nRepo: https://github.com/Omnilatent/OmniAdmobAdsManager.git",
     "keywords": ["ads"],
