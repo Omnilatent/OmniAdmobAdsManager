@@ -14,7 +14,7 @@ namespace Omnilatent.AdMob
         {
             m_Manager = mManager;
         }
-        
+
         public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform, AdsManager.InterstitialDelegate onAdLoaded = null)
         {
             string id = CustomMediation.GetAdmobID(placementType);
@@ -42,7 +42,7 @@ namespace Omnilatent.AdMob
                 RequestBanner(placementType, adSize, adPosition, onAdLoaded);
             }
         }
-        
+
         public void RequestBanner(AdPlacement.Type placementType, AdSize adSize, GoogleMobileAds.Api.AdPosition adPosition, AdsManager.InterstitialDelegate onAdLoaded = null)
         {
             string placementId = CustomMediation.GetAdmobID(placementType);
@@ -57,8 +57,15 @@ namespace Omnilatent.AdMob
                 currentBannerAd.BannerView.OnBannerAdLoadFailed += OnBannerAdsFailedToLoad;
                 currentBannerAd.BannerView.OnBannerAdLoaded += OnBannerAdsLoaded;
                 currentBannerAd.BannerView.OnAdPaid += OnBannerPaidEvent;
+                currentBannerAd.BannerView.OnAdClicked += () =>
+                {
+                    AdMobManager.QueueMainThreadExecution(() =>
+                    {
+                        m_Manager.onBannerUserClick?.Invoke(GetCurrentBannerAdObject().AdPlacementType);
+                    });
+                };
                 currentBannerAd.State = AdObjectState.Loading;
-                
+
                 var adRequest = new AdRequest();
                 currentBannerAd.BannerView.LoadAd(adRequest);
             }
@@ -87,7 +94,7 @@ namespace Omnilatent.AdMob
                 }
 
                 GetCurrentBannerAdObject().onAdLoaded?.Invoke(true);
-                m_Manager.onBannerLoaded?.Invoke(currentBannerAd.AdPlacementType);
+                m_Manager.onBannerLoaded?.Invoke(currentBannerAd.AdPlacementType, currentBannerAd.BannerView.GetResponseInfo());
             });
         }
 
@@ -112,7 +119,7 @@ namespace Omnilatent.AdMob
                 currentBannerAd = null;
             }
         }
-        
+
         public void HideBanner()
         {
             if (currentBannerAd != null && currentBannerAd.BannerView != null)

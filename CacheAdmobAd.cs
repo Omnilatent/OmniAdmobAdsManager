@@ -90,7 +90,7 @@ namespace Omnilatent.AdMob
                         CheckAdQueueSizeAndPreload<RewardedAd>(cacheContainer.placementId);
                         cacheContainer.status = AdStatus.LoadSuccess;
                         //.Log($"Ad {container.placementId} loaded success");
-                        AdMobManager.instance.onRewardAdLoaded?.Invoke(cacheContainer.placementId);
+                        AdMobManager.instance.onRewardAdLoaded?.Invoke(cacheContainer.placementId, newAd.GetResponseInfo());
                     }
                     else
                     {
@@ -154,6 +154,13 @@ namespace Omnilatent.AdMob
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
                     AdMobManager.instance.onRewardAdPaidEvent?.Invoke(container.placementId, adValue);
+                });
+            };
+            newAd.OnAdClicked += () =>
+            {
+                AdMobManager.QueueMainThreadExecution(() =>
+                {
+                    AdMobManager.instance.onRewardUserClick?.Invoke(container.placementId);
                 });
             };
         }

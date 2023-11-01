@@ -10,9 +10,10 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     //App Open Ad event
     public Action<AdPlacement.Type, AdValue> onAOAdPaidEvent;
     public Action<AdPlacement.Type, AdError> onAOAdFailedToPresentFullScreenContent;
-    public Action<AdPlacement.Type> onAOAdDidPresentFullScreenContent;
+    public Action<AdPlacement.Type, ResponseInfo> onAOAdDidPresentFullScreenContent;
     public Action<AdPlacement.Type> onAOAdDidDismissFullScreenContent;
     public Action<AdPlacement.Type> onAOAdDidRecordImpression;
+    public Action<AdPlacement.Type> onAOAdUserClickEvent;
 
     AppOpenAd appOpenAd;
     AdsManager.InterstitialDelegate onAppOpenAdClosed;
@@ -70,7 +71,14 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
                 QueueMainThreadExecution(() =>
                 {
                     showingAds = true;
-                    onAOAdDidPresentFullScreenContent?.Invoke(adID);
+                    onAOAdDidPresentFullScreenContent?.Invoke(adID, appOpenAdReady.GetResponseInfo());
+                });
+            };
+            appOpenAdReady.OnAdClicked += () =>
+            {
+                QueueMainThreadExecution(() =>
+                {
+                    onAOAdUserClickEvent?.Invoke(adID);
                 });
             };
             appOpenAdReady.OnAdPaid += (args) =>
