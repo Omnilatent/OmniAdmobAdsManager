@@ -29,11 +29,11 @@ namespace Omnilatent.AdMob
             loadingInterstitialAdObj.AdPlacementType = placementId;
             loadingInterstitialAdObj.State = AdObjectState.Loading;
             loadingInterstitialAdObj.onAdLoaded = onAdLoaded;
-            RequestAdmobInterstitialNoShow(id, onAdLoaded, showLoading);
+            RequestAdmobInterstitialNoShow(placementId, id, onAdLoaded, showLoading);
         }
 
         /// <param name="onAdLoaded">Function to call after the ads is loaded</param>
-        public void RequestAdmobInterstitialNoShow(string _adUnitId, AdsManager.InterstitialDelegate onAdLoaded = null, bool showLoading = true)
+        public void RequestAdmobInterstitialNoShow(AdPlacement.Type placementId, string _adUnitId, AdsManager.InterstitialDelegate onAdLoaded = null, bool showLoading = true)
         {
             // Clean up the old ad before loading a new one.
             if (interstitialAd != null)
@@ -78,6 +78,7 @@ namespace Omnilatent.AdMob
                             loadingInterstitialAdObj.State = AdObjectState.Ready;
                             // Debug.Log("Interstitial ad loaded with response : " + ad.GetResponseInfo());
                             interstitialAd = ad;
+                            m_Manager.onInterstitialLoaded.Invoke(placementId, ad.GetResponseInfo());
                             RegisterEventHandlers(ad, loadingInterstitialAdObj);
                         }
 
