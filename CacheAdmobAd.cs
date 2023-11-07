@@ -265,6 +265,7 @@ namespace Omnilatent.AdMob
 
                         cacheContainer.status = AdStatus.LoadFailed;
                         cacheContainer.DestroyAd();
+                        AdMobManager.instance.onAOAdFailedToPresentFullScreenContent?.Invoke(placementType, error);
                         //GetCachedAdContainerList(container.placementId, false).Remove(container);
                         return;
                     }

@@ -72,6 +72,7 @@ namespace Omnilatent.AdMob
                         {
                             loadingInterstitialAdObj.State = AdObjectState.LoadFailed;
                             Debug.LogError("interstitial ad failed to load an ad " + "with error : " + error);
+                            AdMobManager.instance.onInterstitialFailedToLoad?.Invoke(placementId, error);
                         }
                         else
                         {
@@ -79,7 +80,7 @@ namespace Omnilatent.AdMob
                             // Debug.Log("Interstitial ad loaded with response : " + ad.GetResponseInfo());
                             interstitialAd = ad;
                             m_Manager.onInterstitialLoaded.Invoke(placementId, ad.GetResponseInfo());
-                            RegisterEventHandlers(ad, loadingInterstitialAdObj);
+                            RegisterEventHandlers(ad, loadingInterstitialAdObj); 
                         }
 
                         onAdLoaded?.Invoke(error == null);
