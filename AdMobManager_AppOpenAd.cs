@@ -43,6 +43,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
         if (appOpenAdReady != null)
         {
+            onAOAdDidPresentFullScreenContent?.Invoke(adID, appOpenAdReady.GetResponseInfo());
             appOpenAdReady.OnAdFullScreenContentClosed += () =>
             {
                 QueueMainThreadExecution(() =>
@@ -71,7 +72,6 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
                 QueueMainThreadExecution(() =>
                 {
                     showingAds = true;
-                    onAOAdDidPresentFullScreenContent?.Invoke(adID, appOpenAdReady.GetResponseInfo());
                 });
             };
             appOpenAdReady.OnAdClicked += () =>
