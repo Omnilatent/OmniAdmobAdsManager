@@ -98,7 +98,7 @@ namespace Omnilatent.AdMob
                         cacheContainer.DestroyAd();
                         //GetCachedAdContainerList(container.placementId, false).Remove(container);
                         Debug.Log($"Ad {cacheContainer.placementId} loaded failed");
-                        AdMobManager.instance.onRewardAdFailedToLoad?.Invoke(cacheContainer.placementId, error);
+                        AdMobManager.instance.onRewardAdFailedToLoad?.Invoke(cacheContainer.placementId, newAd, error);
                     }
                 });
             });
@@ -132,35 +132,35 @@ namespace Omnilatent.AdMob
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
-                    AdMobManager.instance.onRewardAdFailedToShow?.Invoke(container.placementId, e);
+                    AdMobManager.instance.onRewardAdFailedToShow?.Invoke(container.placementId, newAd, e);
                 });
             };
             newAd.OnAdImpressionRecorded += () =>
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
-                    AdMobManager.instance.onRewardAdDidRecordImpression?.Invoke(container.placementId);
+                    AdMobManager.instance.onRewardAdDidRecordImpression?.Invoke(container.placementId, newAd);
                 });
             };
             newAd.OnAdFullScreenContentOpened += () =>
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
-                    AdMobManager.instance.onRewardAdOpening?.Invoke(container.placementId);
+                    AdMobManager.instance.onRewardAdOpening?.Invoke(container.placementId, newAd);
                 });
             };
             newAd.OnAdPaid += (adValue) =>
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
-                    AdMobManager.instance.onRewardAdPaidEvent?.Invoke(container.placementId, adValue);
+                    AdMobManager.instance.onRewardAdPaidEvent?.Invoke(container.placementId, newAd, adValue);
                 });
             };
             newAd.OnAdClicked += () =>
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {
-                    AdMobManager.instance.onRewardUserClick?.Invoke(container.placementId);
+                    AdMobManager.instance.onRewardUserClick?.Invoke(container.placementId, newAd);
                 });
             };
         }
