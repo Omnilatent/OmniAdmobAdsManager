@@ -90,7 +90,7 @@ namespace Omnilatent.AdMob
                         CheckAdQueueSizeAndPreload<RewardedAd>(cacheContainer.placementId);
                         cacheContainer.status = AdStatus.LoadSuccess;
                         //.Log($"Ad {container.placementId} loaded success");
-                        AdMobManager.instance.onRewardAdLoaded?.Invoke(cacheContainer.placementId, newAd.GetResponseInfo());
+                        AdMobManager.instance.onRewardAdLoaded?.Invoke(cacheContainer.placementId, newAd);
                     }
                     else
                     {

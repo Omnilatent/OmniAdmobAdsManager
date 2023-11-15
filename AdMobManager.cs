@@ -193,7 +193,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     public Action<AdPlacement.Type, AdError> onBannerFailedToLoad;
     public Action<AdPlacement.Type, AdValue> onBannerPaidEvent;
-    public Action<AdPlacement.Type, ResponseInfo> onBannerLoaded;
+    public Action<AdPlacement.Type, BannerView> onBannerLoaded;
     public Action<AdPlacement.Type> onBannerShow;
     public Action<AdPlacement.Type> onBannerHide;
     public Action<AdPlacement.Type> onBannerUserClick;
@@ -229,7 +229,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     #region Interstitial
 
-    public Action<AdPlacement.Type, ResponseInfo> onInterstitialLoaded;
+    public Action<AdPlacement.Type, InterstitialAd> onInterstitialLoaded;
     public Action<AdPlacement.Type, AdError> onInterstitialFailedToLoad;
     public Action<AdPlacement.Type> onInterstitialOpening;
     public Action<AdPlacement.Type> onInterstitialClosed;

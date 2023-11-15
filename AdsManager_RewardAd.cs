@@ -10,7 +10,7 @@ public partial class AdMobManager : MonoBehaviour
     RewardedAd rewardBasedVideo;
     Coroutine timeoutLoadRewardCoroutine;
 
-    public Action<AdPlacement.Type, ResponseInfo> onRewardAdLoaded;
+    public Action<AdPlacement.Type, RewardedAd> onRewardAdLoaded;
     public Action<AdPlacement.Type> onRewardAdOpening;
     public Action<AdPlacement.Type> onRewardAdClosed;
     public Action<AdPlacement.Type, AdError> onRewardAdFailedToShow;

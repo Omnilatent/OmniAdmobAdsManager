@@ -10,7 +10,8 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     //App Open Ad event
     public Action<AdPlacement.Type, AdValue> onAOAdPaidEvent;
     public Action<AdPlacement.Type, AdError> onAOAdFailedToPresentFullScreenContent;
-    public Action<AdPlacement.Type, ResponseInfo> onAOAdDidPresentFullScreenContent;
+    public Action<AdPlacement.Type, AppOpenAd> onAOAdDidPresentFullScreenContent;
+    public Action<AdPlacement.Type, AppOpenAd> onAOAdBeforePresentFullScreenContent;
     public Action<AdPlacement.Type> onAOAdDidDismissFullScreenContent;
     public Action<AdPlacement.Type> onAOAdDidRecordImpression;
     public Action<AdPlacement.Type> onAOAdUserClickEvent;
@@ -43,7 +44,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
         if (appOpenAdReady != null)
         {
-            onAOAdDidPresentFullScreenContent?.Invoke(adID, appOpenAdReady.GetResponseInfo());
+            onAOAdBeforePresentFullScreenContent?.Invoke(adID, appOpenAdReady);
             appOpenAdReady.OnAdFullScreenContentClosed += () =>
             {
                 QueueMainThreadExecution(() =>
@@ -72,6 +73,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
                 QueueMainThreadExecution(() =>
                 {
                     showingAds = true;
+                    onAOAdDidPresentFullScreenContent?.Invoke(adID, appOpenAdReady);
                 });
             };
             appOpenAdReady.OnAdClicked += () =>

@@ -94,7 +94,7 @@ namespace Omnilatent.AdMob
                 }
 
                 GetCurrentBannerAdObject().onAdLoaded?.Invoke(true);
-                m_Manager.onBannerLoaded?.Invoke(currentBannerAd.AdPlacementType, currentBannerAd.BannerView.GetResponseInfo());
+                m_Manager.onBannerLoaded?.Invoke(currentBannerAd.AdPlacementType, currentBannerAd.BannerView);
             });
         }
 
