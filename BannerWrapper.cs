@@ -68,7 +68,7 @@ namespace Omnilatent.AdMob
 
                 var adRequest = new AdRequest();
                 currentBannerAd.BannerView.LoadAd(adRequest);
-                m_Manager.onBannerRequest?.Invoke(placementType);
+                m_Manager.onBannerRequested?.Invoke(placementType);
             }
         }
 

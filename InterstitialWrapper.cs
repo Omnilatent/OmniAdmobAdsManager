@@ -87,7 +87,7 @@ namespace Omnilatent.AdMob
                     });
                 });
             
-            m_Manager.onInterstitialRequest?.Invoke(placementId);
+            m_Manager.onInterstitialRequested?.Invoke(placementId);
 
             if (showLoading)
                 //Manager.LoadingAnimation(true);

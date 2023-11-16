@@ -197,7 +197,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public Action<AdPlacement.Type, BannerView> onBannerShow;
     public Action<AdPlacement.Type, BannerView> onBannerHide;
     public Action<AdPlacement.Type, BannerView> onBannerUserClick;
-    public Action<AdPlacement.Type> onBannerRequest;
+    public Action<AdPlacement.Type> onBannerRequested;
     private BannerWrapper _bannerWrapper;
 
     internal BannerWrapper bannerWrapper
@@ -238,7 +238,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public Action<AdPlacement.Type, InterstitialAd> onInterstitialImpression;
     public Action<AdPlacement.Type, InterstitialAd> onInterstitialClicked;
     public Action<AdPlacement.Type, InterstitialAd, AdValue> onInterstitialPaidEvent;
-    public Action<AdPlacement.Type> onInterstitialRequest;
+    public Action<AdPlacement.Type> onInterstitialRequested;
 
     private InterstitialWrapper _interstitialWrapper;
 

@@ -104,7 +104,7 @@ namespace Omnilatent.AdMob
                 });
             });
 
-            AdMobManager.instance.onRewardAdRequest?.Invoke(placementType);
+            AdMobManager.instance.onRewardAdRequested?.Invoke(placementType);
             //.Log($"Preload {placementType}. adQueue size {adQueue.Count}");
         }
 
@@ -280,7 +280,7 @@ namespace Omnilatent.AdMob
                 });
             });
 
-            AdMobManager.instance.onAOAdRequest?.Invoke(placementType);
+            AdMobManager.instance.onAOAdRequested?.Invoke(placementType);
             //.Log($"Preload {placementType}. adQueue size {adQueue.Count}");
         }
 
