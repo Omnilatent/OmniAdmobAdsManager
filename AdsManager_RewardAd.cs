@@ -19,6 +19,7 @@ public partial class AdMobManager : MonoBehaviour
     public Action<AdPlacement.Type, RewardedAd, AdValue> onRewardAdPaidEvent;
     public Action<AdPlacement.Type, RewardedAd, Reward> onRewardAdUserEarnReward;
     public Action<AdPlacement.Type, RewardedAd> onRewardUserClick;
+    public Action<AdPlacement.Type> onRewardAdRequest;
 
     #region Callback
 

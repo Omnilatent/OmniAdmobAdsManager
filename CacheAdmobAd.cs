@@ -79,6 +79,8 @@ namespace Omnilatent.AdMob
             var request = new AdRequest();
             CachedAdContainer cacheContainer = new CachedAdContainer(placementType, null, typeof(RewardedAd));
             adQueue.Add(cacheContainer);
+
+            AdMobManager.instance.onRewardAdRequest?.Invoke(placementType);
             RewardedAd.Load(id, request, (newAd, error) =>
             {
                 AdMobManager.QueueMainThreadExecution(() =>

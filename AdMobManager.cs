@@ -237,6 +237,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public Action<AdPlacement.Type> onInterstitialImpression;
     public Action<AdPlacement.Type> onInterstitialClicked;
     public Action<AdPlacement.Type, AdValue> onInterstitialPaidEvent;
+    public Action<AdPlacement.Type> onInterstitialRequest;
 
     private InterstitialWrapper _interstitialWrapper;
 
@@ -257,6 +258,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     public void RequestInterstitialNoShow(AdPlacement.Type placementType, AdsManager.InterstitialDelegate onAdLoaded = null, bool showLoading = true)
     {
+        onInterstitialRequest?.Invoke(placementType);
         interstitialWrapper.RequestInterstitialNoShow(placementType, onAdLoaded, showLoading);
     }
 
