@@ -15,6 +15,8 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public Action<AdPlacement.Type, AppOpenAd> onAOAdDidDismissFullScreenContent;
     public Action<AdPlacement.Type, AppOpenAd> onAOAdDidRecordImpression;
     public Action<AdPlacement.Type, AppOpenAd> onAOAdUserClickEvent;
+    public Action<AdPlacement.Type, AppOpenAd> onAOAdLoaded;
+    public Action<AdPlacement.Type, AppOpenAd, AdError> onAOAdFailedToLoad;
     public Action<AdPlacement.Type> onAOAdRequested;
 
     AppOpenAd appOpenAd;

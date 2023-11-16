@@ -267,7 +267,7 @@ namespace Omnilatent.AdMob
                         AdsManager.LogError($"[{cacheContainer.placementId}]-id:'{id}' load failed.{error.GetMessage()}", cacheContainer.placementId.ToString());
 
                         cacheContainer.status = AdStatus.LoadFailed;
-                        AdMobManager.instance.onAOAdFailedToPresentFullScreenContent?.Invoke(placementType, newAppOpenAd, error);
+                        AdMobManager.instance.onAOAdFailedToLoad?.Invoke(placementType, newAppOpenAd, error);
                         cacheContainer.DestroyAd();
                         //GetCachedAdContainerList(container.placementId, false).Remove(container);
                         return;
@@ -276,6 +276,7 @@ namespace Omnilatent.AdMob
                     {
                         cacheContainer.ad = newAppOpenAd;
                         onAdLoaded?.Invoke(new RewardResult(RewardResult.Type.Finished));
+                        AdMobManager.instance.onAOAdLoaded?.Invoke(placementType, newAppOpenAd);
                     }
                 });
             });
