@@ -72,7 +72,7 @@ namespace Omnilatent.AdMob
                         {
                             loadingInterstitialAdObj.State = AdObjectState.LoadFailed;
                             Debug.LogError("interstitial ad failed to load an ad " + "with error : " + error);
-                            AdMobManager.instance.onInterstitialFailedToLoad?.Invoke(placementId, error);
+                            AdMobManager.instance.onInterstitialFailedToLoad?.Invoke(placementId, ad, error);
                         }
                         else
                         {
@@ -97,29 +97,29 @@ namespace Omnilatent.AdMob
             // Raised when the ad is estimated to have earned money.
             ad.OnAdPaid += (AdValue adValue) =>
             {
-                AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialPaidEvent?.Invoke(adObject.AdPlacementType, adValue); });
+                AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialPaidEvent?.Invoke(adObject.AdPlacementType, ad, adValue); });
             };
             // Raised when an impression is recorded for an ad.
             ad.OnAdImpressionRecorded += () =>
             {
-                AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialImpression?.Invoke(adObject.AdPlacementType); });
+                AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialImpression?.Invoke(adObject.AdPlacementType, ad); });
             };
             // Raised when a click is recorded for an ad.
-            ad.OnAdClicked += () => { AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialClicked?.Invoke(adObject.AdPlacementType); }); };
+            ad.OnAdClicked += () => { AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialClicked?.Invoke(adObject.AdPlacementType, ad); }); };
             // Raised when an ad opened full screen content.
             ad.OnAdFullScreenContentOpened += () =>
             {
-                AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialOpening?.Invoke(adObject.AdPlacementType); });
+                AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialOpening?.Invoke(adObject.AdPlacementType, ad); });
             };
             // Raised when the ad closed full screen content.
             ad.OnAdFullScreenContentClosed += () =>
             {
-                AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialClosed?.Invoke(adObject.AdPlacementType); });
+                AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialClosed?.Invoke(adObject.AdPlacementType, ad); });
             };
             // Raised when the ad failed to open full screen content.
             ad.OnAdFullScreenContentFailed += (AdError error) =>
             {
-                AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialFailedToShow?.Invoke(adObject.AdPlacementType, error); });
+                AdMobManager.QueueMainThreadExecution(() => { m_Manager.onInterstitialFailedToShow?.Invoke(adObject.AdPlacementType, ad, error); });
             };
         }
 

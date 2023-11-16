@@ -230,13 +230,13 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     #region Interstitial
 
     public Action<AdPlacement.Type, InterstitialAd> onInterstitialLoaded;
-    public Action<AdPlacement.Type, AdError> onInterstitialFailedToLoad;
-    public Action<AdPlacement.Type> onInterstitialOpening;
-    public Action<AdPlacement.Type> onInterstitialClosed;
-    public Action<AdPlacement.Type, AdError> onInterstitialFailedToShow;
-    public Action<AdPlacement.Type> onInterstitialImpression;
-    public Action<AdPlacement.Type> onInterstitialClicked;
-    public Action<AdPlacement.Type, AdValue> onInterstitialPaidEvent;
+    public Action<AdPlacement.Type, InterstitialAd, AdError> onInterstitialFailedToLoad;
+    public Action<AdPlacement.Type, InterstitialAd> onInterstitialOpening;
+    public Action<AdPlacement.Type, InterstitialAd> onInterstitialClosed;
+    public Action<AdPlacement.Type, InterstitialAd, AdError> onInterstitialFailedToShow;
+    public Action<AdPlacement.Type, InterstitialAd> onInterstitialImpression;
+    public Action<AdPlacement.Type, InterstitialAd> onInterstitialClicked;
+    public Action<AdPlacement.Type, InterstitialAd, AdValue> onInterstitialPaidEvent;
     public Action<AdPlacement.Type> onInterstitialRequest;
 
     private InterstitialWrapper _interstitialWrapper;
