@@ -79,8 +79,7 @@ namespace Omnilatent.AdMob
             var request = new AdRequest();
             CachedAdContainer cacheContainer = new CachedAdContainer(placementType, null, typeof(RewardedAd));
             adQueue.Add(cacheContainer);
-
-            AdMobManager.instance.onRewardAdRequest?.Invoke(placementType);
+            
             RewardedAd.Load(id, request, (newAd, error) =>
             {
                 AdMobManager.QueueMainThreadExecution(() =>
@@ -104,6 +103,8 @@ namespace Omnilatent.AdMob
                     }
                 });
             });
+
+            AdMobManager.instance.onRewardAdRequest?.Invoke(placementType);
             //.Log($"Preload {placementType}. adQueue size {adQueue.Count}");
         }
 
@@ -266,8 +267,8 @@ namespace Omnilatent.AdMob
                         AdsManager.LogError($"[{cacheContainer.placementId}]-id:'{id}' load failed.{error.GetMessage()}", cacheContainer.placementId.ToString());
 
                         cacheContainer.status = AdStatus.LoadFailed;
+                        AdMobManager.instance.onAOAdFailedToPresentFullScreenContent?.Invoke(placementType, newAppOpenAd, error);
                         cacheContainer.DestroyAd();
-                        AdMobManager.instance.onAOAdFailedToPresentFullScreenContent?.Invoke(placementType, error);
                         //GetCachedAdContainerList(container.placementId, false).Remove(container);
                         return;
                     }
@@ -278,6 +279,8 @@ namespace Omnilatent.AdMob
                     }
                 });
             });
+
+            AdMobManager.instance.onAOAdRequest?.Invoke(placementType);
             //.Log($"Preload {placementType}. adQueue size {adQueue.Count}");
         }
 
