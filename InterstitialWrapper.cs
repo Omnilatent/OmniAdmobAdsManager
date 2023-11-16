@@ -86,6 +86,8 @@ namespace Omnilatent.AdMob
                         onAdLoaded?.Invoke(error == null);
                     });
                 });
+            
+            m_Manager.onInterstitialRequest?.Invoke(placementId);
 
             if (showLoading)
                 //Manager.LoadingAnimation(true);

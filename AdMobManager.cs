@@ -259,7 +259,6 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     public void RequestInterstitialNoShow(AdPlacement.Type placementType, AdsManager.InterstitialDelegate onAdLoaded = null, bool showLoading = true)
     {
-        onInterstitialRequest?.Invoke(placementType);
         interstitialWrapper.RequestInterstitialNoShow(placementType, onAdLoaded, showLoading);
     }
 
