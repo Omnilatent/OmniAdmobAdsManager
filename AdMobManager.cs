@@ -191,12 +191,13 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     #region Banner
 
-    public Action<AdPlacement.Type, AdError> onBannerFailedToLoad;
-    public Action<AdPlacement.Type, AdValue> onBannerPaidEvent;
+    public Action<AdPlacement.Type, BannerView, AdError> onBannerFailedToLoad;
+    public Action<AdPlacement.Type, BannerView, AdValue> onBannerPaidEvent;
     public Action<AdPlacement.Type, BannerView> onBannerLoaded;
-    public Action<AdPlacement.Type> onBannerShow;
-    public Action<AdPlacement.Type> onBannerHide;
-    public Action<AdPlacement.Type> onBannerUserClick;
+    public Action<AdPlacement.Type, BannerView> onBannerShow;
+    public Action<AdPlacement.Type, BannerView> onBannerHide;
+    public Action<AdPlacement.Type, BannerView> onBannerUserClick;
+    public Action<AdPlacement.Type> onBannerRequest;
     private BannerWrapper _bannerWrapper;
 
     internal BannerWrapper bannerWrapper
