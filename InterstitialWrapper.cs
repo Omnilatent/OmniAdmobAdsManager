@@ -79,7 +79,7 @@ namespace Omnilatent.AdMob
                             loadingInterstitialAdObj.State = AdObjectState.Ready;
                             // Debug.Log("Interstitial ad loaded with response : " + ad.GetResponseInfo());
                             interstitialAd = ad;
-                            m_Manager.onInterstitialLoaded.Invoke(placementId, ad);
+                            m_Manager.onInterstitialLoaded?.Invoke(placementId, ad);
                             RegisterEventHandlers(ad, loadingInterstitialAdObj); 
                         }
 
