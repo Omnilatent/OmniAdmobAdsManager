@@ -1,3 +1,9 @@
+## 1.7.0
+News:
+- Implement IAdsNetworkHelper DestroyBanner() function.
+
+Change dependency: Requires Omni Ads Manager 2.10.x.
+
 ## 1.6.0
 News:
 - Support Google Admob SDK 8.2.0+.

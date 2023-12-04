@@ -37,7 +37,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public void ShowAppOpenAd(AdPlacement.Type adID, AdsManager.InterstitialDelegate onAdClosed = null)
     {
         AppOpenAd appOpenAdReady;
-        CacheAdmobAd.AdStatus cacheAdState = CacheAdmobAd.GetReadyAd<AppOpenAd>(adID, out appOpenAdReady);
+        CacheAdmobAd.AdStatus cacheAdState = CacheAdmobAd.GetReadyAd<AppOpenAd>(adID, out appOpenAdReady, true);
 
         if (appOpenAdReady == null || showingAds)
         {
