@@ -296,11 +296,11 @@ namespace Omnilatent.AdMob
         }
 
         /// <summary>
-        /// 
+        /// Iterate through the cached ad list. If an ad finished loading, return it and remove it from cache list (optional).
         /// </summary>
         /// <param name="placementType"></param>
-        /// <param name="adReady"></param>
-        /// <param name="removeReadyAdFromCachedList">If true, when a ready ad is found, return it in the function and remove it from the cached ad list.</param>
+        /// <param name="adReady">Return null if no ad is ready yet</param>
+        /// <param name="removeReadyAdFromCachedList">If true, when a ready ad is found, remove it from the cached ad list.</param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public static AdStatus GetReadyAd<T>(AdPlacement.Type placementType, out T adReady, bool removeReadyAdFromCachedList) where T : class
@@ -326,7 +326,8 @@ namespace Omnilatent.AdMob
                     if (adQueue[i].IsAdLoaded())
                     {
                         adReady = (T)adQueue[i].ad;
-                        adQueue.RemoveAt(i);
+                        if (removeReadyAdFromCachedList)
+                            adQueue.RemoveAt(i);
                         return AdStatus.LoadSuccess;
                     }
                     else if (adQueue[i].status == AdStatus.LoadFailed)
