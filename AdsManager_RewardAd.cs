@@ -175,27 +175,7 @@ public partial class AdMobManager : MonoBehaviour
         //No rewardedAd is ready, show message
         if (cacheAdState != CacheAdmobAd.AdStatus.LoadSuccess)
         {
-            RewardResult rewardResult;
-            if (timedOut)
-            {
-                if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
-                {
-                    rewardResult = new RewardResult(RewardResult.Type.LoadFailed, AdMobConst.rewardAdSelfTimeoutMsg);
-                }
-                else
-                {
-                    rewardResult = new RewardResult(RewardResult.Type.Loading, AdMobConst.loadingRewardAdMsg);
-                }
-            }
-            else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
-            {
-                rewardResult = new RewardResult(RewardResult.Type.LoadFailed, AdMobConst.adLoadFailCheckConnectionMsg);
-            }
-            else
-            {
-                rewardResult = new RewardResult(RewardResult.Type.Loading, AdMobConst.loadingRewardAdMsg);
-            }
-
+            RewardResult rewardResult = CreateLoadFailedMessage(timedOut, cacheAdState);
             onFinish?.Invoke(rewardResult);
         }
         //.Log($"Wait ad load cacheAdState: {cacheAdState}");
@@ -255,29 +235,35 @@ public partial class AdMobManager : MonoBehaviour
         //No rewardedAd is ready, show message
         if (cacheAdState != CacheAdmobAd.AdStatus.LoadSuccess)
         {
-            RewardResult rewardResult;
-            if (timedOut)
+            RewardResult rewardResult = CreateLoadFailedMessage(timedOut, cacheAdState);
+            onFinish?.Invoke(rewardResult);
+        }
+        //.Log($"Wait ad load cacheAdState: {cacheAdState}");
+    }
+
+    RewardResult CreateLoadFailedMessage(bool timedOut, CacheAdmobAd.AdStatus cacheAdState)
+    {
+        RewardResult rewardResult;
+        if (timedOut)
+        {
+            if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
             {
-                if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
-                {
-                    rewardResult = new RewardResult(RewardResult.Type.LoadFailed, AdMobConst.rewardAdSelfTimeoutMsg);
-                }
-                else
-                {
-                    rewardResult = new RewardResult(RewardResult.Type.Loading, AdMobConst.loadingRewardAdMsg);
-                }
-            }
-            else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
-            {
-                rewardResult = new RewardResult(RewardResult.Type.LoadFailed, AdMobConst.adLoadFailCheckConnectionMsg);
+                rewardResult = new RewardResult(RewardResult.Type.LoadFailed, AdMobConst.rewardAdSelfTimeoutMsg);
             }
             else
             {
                 rewardResult = new RewardResult(RewardResult.Type.Loading, AdMobConst.loadingRewardAdMsg);
             }
-
-            onFinish?.Invoke(rewardResult);
         }
-        //.Log($"Wait ad load cacheAdState: {cacheAdState}");
+        else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
+        {
+            rewardResult = new RewardResult(RewardResult.Type.LoadFailed, AdMobConst.adLoadFailCheckConnectionMsg);
+        }
+        else
+        {
+            rewardResult = new RewardResult(RewardResult.Type.Loading, AdMobConst.loadingRewardAdMsg);
+        }
+
+        return rewardResult;
     }
 }
