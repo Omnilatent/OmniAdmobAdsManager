@@ -115,7 +115,7 @@ public partial class AdMobManager : MonoBehaviour
         timeoutLoadRewardCoroutine = StartCoroutine(CoTimeoutLoadReward(() =>
         {
             timedOut = true;
-            cacheAdState = CacheAdmobAd.AdStatus.LoadFailed;
+            // cacheAdState = CacheAdmobAd.AdStatus.Loading;
         }));
 
         //Continuously check for ready cached ad. If timed out before any ads is ready then break out of checking
@@ -196,7 +196,7 @@ public partial class AdMobManager : MonoBehaviour
         timeoutLoadRewardCoroutine = StartCoroutine(CoTimeoutLoadReward(() =>
         {
             timedOut = true;
-            cacheAdState = CacheAdmobAd.AdStatus.LoadFailed;
+            // cacheAdState = CacheAdmobAd.AdStatus.Loading;
         }));
 
         //Continuously check for ready cached ad. If timed out before any ads is ready then break out of checking
