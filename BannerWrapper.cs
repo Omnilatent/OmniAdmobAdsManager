@@ -18,15 +18,7 @@ namespace Omnilatent.AdMob
         public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform, AdsManager.InterstitialDelegate onAdLoaded = null)
         {
             string id = CustomMediation.GetAdmobID(placementType);
-            GoogleMobileAds.Api.AdPosition adPosition = GoogleMobileAds.Api.AdPosition.Bottom;
-            if (bannerTransform.adPosition != Omnilatent.AdsMediation.AdPosition.Unset)
-            {
-                adPosition = (GoogleMobileAds.Api.AdPosition)bannerTransform.adPosition;
-            }
             //ShowBanner(id, AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth), adPosition, 0f, onAdLoaded);
-
-            AdSize adSize = bannerTransform.adSizeData as AdSize;
-            if (adSize == null) { adSize = AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth); }
 
             if (currentBannerAd != null && currentBannerAd.AdPlacementType == placementType)
             {
@@ -39,17 +31,27 @@ namespace Omnilatent.AdMob
             {
                 //.Log(string.Format("destroying current banner({0} {1}), showing new one", AdsManager.bannerId, currentBannerSize));
                 DestroyBanner();
-                RequestBanner(placementType, adSize, adPosition, onAdLoaded);
+                RequestBanner(placementType, bannerTransform, onAdLoaded);
             }
         }
 
-        public void RequestBanner(AdPlacement.Type placementType, AdSize adSize, GoogleMobileAds.Api.AdPosition adPosition, AdsManager.InterstitialDelegate onAdLoaded = null)
+        public void RequestBanner(AdPlacement.Type placementType, BannerTransform bannerTransform,
+            AdsManager.InterstitialDelegate onAdLoaded = null)
         {
             string placementId = CustomMediation.GetAdmobID(placementType);
             if (this.currentBannerAd == null)
             {
                 AdMobManager.bannerId = placementId;
                 // Create a smart banner at the bottom of the screen.
+                GoogleMobileAds.Api.AdPosition adPosition = GoogleMobileAds.Api.AdPosition.Bottom;
+                if (bannerTransform.adPosition != Omnilatent.AdsMediation.AdPosition.Unset)
+                {
+                    adPosition = (GoogleMobileAds.Api.AdPosition)bannerTransform.adPosition;
+                }
+
+                AdSize adSize = bannerTransform.adSizeData as AdSize;
+                if (adSize == null) { adSize = AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth); }
+
                 currentBannerAd = new AdmobBannerAdObject(placementType, onAdLoaded);
                 currentBannerAd.BannerView = new BannerView(placementId, adSize, adPosition);
 
@@ -67,6 +69,12 @@ namespace Omnilatent.AdMob
                 currentBannerAd.State = AdObjectState.Loading;
 
                 var adRequest = new AdRequest();
+                if (bannerTransform.Collapsible)
+                {
+                    string positionStr = adPosition == GoogleMobileAds.Api.AdPosition.Top ? "top" : "bottom"; 
+                    adRequest.Extras.Add("collapsible", positionStr);
+                }
+                
                 currentBannerAd.BannerView.LoadAd(adRequest);
                 m_Manager.onBannerRequested?.Invoke(placementType);
             }
