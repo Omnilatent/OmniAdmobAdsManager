@@ -1,3 +1,9 @@
+## 1.8.0
+News:
+- Implement Request Reward Ad.
+
+Change dependency: Requires Omni Ads Manager 2.11.x.
+
 ## 1.7.0
 News:
 - Implement IAdsNetworkHelper DestroyBanner() function.
