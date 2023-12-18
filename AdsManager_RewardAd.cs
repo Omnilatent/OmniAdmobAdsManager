@@ -102,10 +102,10 @@ public partial class AdMobManager : MonoBehaviour
 
     public void ShowCachedRewardedAd(AdPlacement.Type placementType, RewardDelegate onFinish)
     {
-        StartCoroutine(CoWaitCachedRewardedAdLoad(placementType, onFinish));
+        StartCoroutine(CoWaitShowCachedRewardedAd(placementType, onFinish));
     }
 
-    IEnumerator CoWaitCachedRewardedAdLoad(AdPlacement.Type placementType, RewardDelegate onFinish)
+    IEnumerator CoWaitShowCachedRewardedAd(AdPlacement.Type placementType, RewardDelegate onFinish)
     {
         CacheAdmobAd.AdStatus cacheAdState = CacheAdmobAd.AdStatus.Loading;
         RewardedAd rewardedAd = null;
@@ -115,7 +115,7 @@ public partial class AdMobManager : MonoBehaviour
         timeoutLoadRewardCoroutine = StartCoroutine(CoTimeoutLoadReward(() =>
         {
             timedOut = true;
-            cacheAdState = CacheAdmobAd.AdStatus.LoadFailed;
+            // cacheAdState = CacheAdmobAd.AdStatus.Loading;
         }));
 
         //Continuously check for ready cached ad. If timed out before any ads is ready then break out of checking
@@ -123,14 +123,14 @@ public partial class AdMobManager : MonoBehaviour
         WaitForSecondsRealtime checkInterval = new WaitForSecondsRealtime(0.1f);
         do
         {
-            cacheAdState = CacheAdmobAd.GetReadyAd<RewardedAd>(placementType, out rewardedAd);
+            cacheAdState = CacheAdmobAd.GetReadyAd<RewardedAd>(placementType, out rewardedAd, true);
             if (cacheAdState == CacheAdmobAd.AdStatus.LoadSuccess)
             {
                 RewardResult rewardResult = new RewardResult(RewardResult.Type.Canceled);
 
-#if UNITY_EDITOR
+                #if UNITY_EDITOR
                 rewardResult.type = RewardResult.Type.Finished;
-#endif
+                #endif
                 rewardedAd.OnAdFullScreenContentClosed += () =>
                 {
                     QueueMainThreadExecution(() =>
@@ -175,29 +175,95 @@ public partial class AdMobManager : MonoBehaviour
         //No rewardedAd is ready, show message
         if (cacheAdState != CacheAdmobAd.AdStatus.LoadSuccess)
         {
-            RewardResult rewardResult;
-            if (timedOut)
+            RewardResult rewardResult = CreateLoadFailedMessage(timedOut, cacheAdState);
+            onFinish?.Invoke(rewardResult);
+        }
+        //.Log($"Wait ad load cacheAdState: {cacheAdState}");
+    }
+
+    public void RequestRewardAd(AdPlacement.Type placementId, RewardDelegate onFinish)
+    {
+        StartCoroutine(CoWaitLoadCachedRewardedAd(placementId, onFinish));
+    }
+
+    IEnumerator CoWaitLoadCachedRewardedAd(AdPlacement.Type placementType, RewardDelegate onFinish)
+    {
+        CacheAdmobAd.AdStatus cacheAdState = CacheAdmobAd.AdStatus.Loading;
+        RewardedAd rewardedAd = null;
+        bool timedOut = false;
+
+        StopCoTimeoutLoadReward();
+        timeoutLoadRewardCoroutine = StartCoroutine(CoTimeoutLoadReward(() =>
+        {
+            timedOut = true;
+            // cacheAdState = CacheAdmobAd.AdStatus.Loading;
+        }));
+
+        //Continuously check for ready cached ad. If timed out before any ads is ready then break out of checking
+        bool loggedLoading = false;
+        WaitForSecondsRealtime checkInterval = new WaitForSecondsRealtime(0.1f);
+        do
+        {
+            cacheAdState = CacheAdmobAd.GetReadyAd<RewardedAd>(placementType, out rewardedAd, false);
+            if (cacheAdState == CacheAdmobAd.AdStatus.LoadSuccess)
             {
-                if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
-                {
-                    rewardResult = new RewardResult(RewardResult.Type.LoadFailed, AdMobConst.rewardAdSelfTimeoutMsg);
-                }
-                else
-                {
-                    rewardResult = new RewardResult(RewardResult.Type.Loading, AdMobConst.loadingRewardAdMsg);
-                }
+                RewardResult rewardResult = new RewardResult(RewardResult.Type.Loaded);
+                #if UNITY_EDITOR
+                rewardResult.type = RewardResult.Type.Loaded;
+                #endif
+                onFinish?.Invoke(rewardResult);
+                break;
             }
             else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
             {
-                rewardResult = new RewardResult(RewardResult.Type.LoadFailed, AdMobConst.adLoadFailCheckConnectionMsg);
+                break;
+            }
+            else if (!timedOut)
+            {
+                if (!loggedLoading)
+                {
+                    Debug.Log($"No ad of '{placementType}' is ready yet. Wating.");
+                    loggedLoading = true;
+                }
+
+                yield return checkInterval; //TODO: add option to break in case game want to continue instead of waiting for ad ready
+            }
+        } while (cacheAdState == CacheAdmobAd.AdStatus.Loading && !timedOut);
+
+        StopCoTimeoutLoadReward();
+
+        //No rewardedAd is ready, show message
+        if (cacheAdState != CacheAdmobAd.AdStatus.LoadSuccess)
+        {
+            RewardResult rewardResult = CreateLoadFailedMessage(timedOut, cacheAdState);
+            onFinish?.Invoke(rewardResult);
+        }
+        //.Log($"Wait ad load cacheAdState: {cacheAdState}");
+    }
+
+    RewardResult CreateLoadFailedMessage(bool timedOut, CacheAdmobAd.AdStatus cacheAdState)
+    {
+        RewardResult rewardResult;
+        if (timedOut)
+        {
+            if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
+            {
+                rewardResult = new RewardResult(RewardResult.Type.LoadFailed, AdMobConst.rewardAdSelfTimeoutMsg);
             }
             else
             {
                 rewardResult = new RewardResult(RewardResult.Type.Loading, AdMobConst.loadingRewardAdMsg);
             }
-
-            onFinish?.Invoke(rewardResult);
         }
-        //.Log($"Wait ad load cacheAdState: {cacheAdState}");
+        else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
+        {
+            rewardResult = new RewardResult(RewardResult.Type.LoadFailed, AdMobConst.adLoadFailCheckConnectionMsg);
+        }
+        else
+        {
+            rewardResult = new RewardResult(RewardResult.Type.Loading, AdMobConst.loadingRewardAdMsg);
+        }
+
+        return rewardResult;
     }
 }
