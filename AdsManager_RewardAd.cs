@@ -148,9 +148,9 @@ public partial class AdMobManager : MonoBehaviour
                 this.showingAds = true;
                 rewardedAd.Show((Reward reward) =>
                 {
+                    rewardResult.type = RewardResult.Type.Finished;
                     QueueMainThreadExecution(() =>
                     {
-                        rewardResult.type = RewardResult.Type.Finished;
                         onRewardAdUserEarnReward?.Invoke(placementType, rewardedAd, reward);
                     });
                 });
