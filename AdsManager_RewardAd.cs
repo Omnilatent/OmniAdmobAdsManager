@@ -83,7 +83,7 @@ public partial class AdMobManager : MonoBehaviour
     {
         if (TIMEOUT_LOADREWARDAD > 0f)
         {
-            var delay = new WaitForSeconds(TIMEOUT_LOADREWARDAD);
+            var delay = new WaitForSecondsRealtime(TIMEOUT_LOADREWARDAD);
             yield return delay;
         }
 

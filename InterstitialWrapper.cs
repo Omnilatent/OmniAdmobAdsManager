@@ -185,7 +185,7 @@ namespace Omnilatent.AdMob
 
         IEnumerator CoTimeoutLoadInterstitial()
         {
-            var delay = new WaitForSeconds(AdMobManager.TIMEOUT_LOADAD);
+            var delay = new WaitForSecondsRealtime(AdMobManager.TIMEOUT_LOADAD);
             yield return delay;
             loadingInterstitialAdObj.onAdLoaded?.Invoke(false);
             coTimeoutLoad = null;
