@@ -215,6 +215,11 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         ShowBanner(placementId, Omnilatent.AdsMediation.BannerTransform.defaultValue, onAdLoaded);
     }
 
+    public void ReloadCollapsibleBanner(AdPlacement.Type placementType, BannerTransform bannerTransform)
+    {
+        bannerWrapper.ReloadCollapsibleBanner(placementType, bannerTransform);
+    }
+
     public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform,
         AdsManager.InterstitialDelegate onAdLoaded = null)
     {

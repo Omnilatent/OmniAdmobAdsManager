@@ -80,6 +80,23 @@ namespace Omnilatent.AdMob
             }
         }
 
+        public void ReloadCollapsibleBanner(AdPlacement.Type placementType, BannerTransform bannerTransform)
+        {
+            var adRequest = new AdRequest();
+            bannerTransform.Collapsible = true;
+            GoogleMobileAds.Api.AdPosition adPosition = GoogleMobileAds.Api.AdPosition.Bottom;
+            if (bannerTransform.adPosition != Omnilatent.AdsMediation.AdPosition.Unset)
+            {
+                adPosition = (GoogleMobileAds.Api.AdPosition)bannerTransform.adPosition;
+            }
+
+            string positionStr = adPosition == GoogleMobileAds.Api.AdPosition.Top ? "top" : "bottom";
+            adRequest.Extras.Add("collapsible", positionStr);
+
+            currentBannerAd.BannerView.LoadAd(adRequest);
+            m_Manager.onBannerRequested?.Invoke(placementType);
+        }
+
         void OnBannerAdsFailedToLoad(AdError args)
         {
             AdMobManager.QueueMainThreadExecution(() =>
