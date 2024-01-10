@@ -10,14 +10,16 @@ public partial class AdMobManager : MonoBehaviour
     RewardedAd rewardBasedVideo;
     Coroutine timeoutLoadRewardCoroutine;
 
-    public Action<AdPlacement.Type> onRewardAdLoaded;
-    public Action<AdPlacement.Type> onRewardAdOpening;
-    public Action<AdPlacement.Type> onRewardAdClosed;
-    public Action<AdPlacement.Type, AdError> onRewardAdFailedToShow;
-    public Action<AdPlacement.Type> onRewardAdDidRecordImpression;
-    public Action<AdPlacement.Type, LoadAdError> onRewardAdFailedToLoad;
-    public Action<AdPlacement.Type, AdValue> onRewardAdPaidEvent;
-    public Action<AdPlacement.Type, Reward> onRewardAdUserEarnReward;
+    public Action<AdPlacement.Type, RewardedAd> onRewardAdLoaded;
+    public Action<AdPlacement.Type, RewardedAd> onRewardAdOpening;
+    public Action<AdPlacement.Type, RewardedAd> onRewardAdClosed;
+    public Action<AdPlacement.Type, RewardedAd, AdError> onRewardAdFailedToShow;
+    public Action<AdPlacement.Type, RewardedAd> onRewardAdDidRecordImpression;
+    public Action<AdPlacement.Type, RewardedAd, LoadAdError> onRewardAdFailedToLoad;
+    public Action<AdPlacement.Type, RewardedAd, AdValue> onRewardAdPaidEvent;
+    public Action<AdPlacement.Type, RewardedAd, Reward> onRewardAdUserEarnReward;
+    public Action<AdPlacement.Type, RewardedAd> onRewardUserClick;
+    public Action<AdPlacement.Type> onRewardAdRequested;
 
     #region Callback
 
@@ -139,7 +141,7 @@ public partial class AdMobManager : MonoBehaviour
                         onFinish.Invoke(rewardResult);
                         rewardedAd.Destroy();
                         CacheAdmobAd.CheckAdQueueSizeAndPreload<RewardedAd>(placementType);
-                        onRewardAdClosed?.Invoke(placementType);
+                        onRewardAdClosed?.Invoke(placementType, rewardedAd);
                     });
                 };
 
@@ -149,7 +151,7 @@ public partial class AdMobManager : MonoBehaviour
                     rewardResult.type = RewardResult.Type.Finished;
                     QueueMainThreadExecution(() =>
                     {
-                        onRewardAdUserEarnReward?.Invoke(placementType, reward);
+                        onRewardAdUserEarnReward?.Invoke(placementType, rewardedAd, reward);
                     });
                 });
                 break;
