@@ -3,8 +3,8 @@ Module for wrapping Admob Ads
 
 ## Dependencies
 
-- Omni Ads Manager 2.5.0+.
-- Google Mobile Ads SDK 6.1.2.
+- Omni Ads Manager 2.11.0+.
+- Google Mobile Ads SDK 8.6.0+.
 
 ## USAGE
 
@@ -24,3 +24,7 @@ Set max amount of preloaded ad.
 `Omnilatent.AdMob.CacheAdmobAd.SameAdTypeShareCache = true/false;`  
 Toggling 'Same Ad Type sharing cache':  
 If true, all ad placements of same type will share cache with each other. E.g. all rewarded ads will share cache.
+
+## Handle Admob Message
+
+A template class to handle events from Admob can be found at https://github.com/Omnilatent/OmniAdmobAdsManager/wiki/Handle-Admob-Manager-Message.

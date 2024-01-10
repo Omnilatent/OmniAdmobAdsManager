@@ -1,3 +1,11 @@
+## 1.9.0
+Breaking changes:
+- Callback functions' parameter changed: Ad Object will be passed as 2nd parameter.
+Example: `Action<AdPlacement.Type> onInterstitialLoaded` will be changed to `Action<AdPlacement.Type, InterstitialAd> onInterstitialLoaded`.
+
+News:
+- Add callback on ad requested.
+
 ## 1.8.0
 News:
 - Implement Request Reward Ad.
