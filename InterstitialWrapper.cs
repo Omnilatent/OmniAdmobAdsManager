@@ -181,7 +181,7 @@ namespace Omnilatent.AdMob
             {
                 var e = new Exception($"Last Interstitial request of '{logOriginName}' didn't fail but no ad is ready, this should not happen.");
                 Debug.LogException(e);
-#if !DISABLE_FIREBASE
+#if OMNILATENT_FIREBASE_MANAGER
                 FirebaseManager.LogException(e);
 #endif
             }
