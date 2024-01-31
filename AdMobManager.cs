@@ -79,6 +79,11 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public float time { get; protected set; }
 
     public bool showingAds { get; internal set; }
+    
+    /// <summary>
+    /// If true, Interstitial's OnAdClosed will be forced to invoke on ad show
+    /// </summary>
+    public static bool CallInterClosedOnOpeningInEditor = false;
 
     #region Static
 

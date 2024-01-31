@@ -152,16 +152,23 @@ namespace Omnilatent.AdMob
                 m_Manager.interstitialTime = m_Manager.time;
                 interstitialAd.OnAdFullScreenContentClosed += () => { AdMobManager.QueueMainThreadExecution(() =>
                 {
-                    OnAdClosed(true);
+                    #if UNITY_EDITOR
+                    if (!AdMobManager.CallInterClosedOnOpeningInEditor)
+                    #endif
+                        OnAdClosed(true);
                 }); };
                 interstitialAd.OnAdFullScreenContentFailed += (error) => { AdMobManager.QueueMainThreadExecution(() =>
                 {
-                    OnAdClosed(false);
+                    #if UNITY_EDITOR
+                    if (!AdMobManager.CallInterClosedOnOpeningInEditor)
+                    #endif
+                        OnAdClosed(false);
                 }); };
                 interstitialAd.Show();
-#if UNITY_EDITOR
-                OnAdClosed(true);
-#endif
+                #if UNITY_EDITOR
+                if (AdMobManager.CallInterClosedOnOpeningInEditor)
+                    OnAdClosed(true);
+                #endif
                 void OnAdClosed(bool success)
                 {
                     onAdClosed?.Invoke(success);
