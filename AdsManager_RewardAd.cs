@@ -268,4 +268,48 @@ public partial class AdMobManager : MonoBehaviour
 
         return rewardResult;
     }
+
+    public void ShowRewardAd(AdPlacement.Type placementType, RewardDelegate onFinish)
+    {
+        CacheAdmobAd.AdStatus cacheAdState = CacheAdmobAd.AdStatus.Loading;
+        RewardedAd rewardedAd = null;
+        cacheAdState = CacheAdmobAd.GetReadyAd<RewardedAd>(placementType, out rewardedAd, true);
+        if (cacheAdState == CacheAdmobAd.AdStatus.LoadSuccess)
+        {
+            RewardResult rewardResult = new RewardResult(RewardResult.Type.Canceled);
+
+            #if UNITY_EDITOR
+                rewardResult.type = RewardResult.Type.Finished;
+            #endif
+            rewardedAd.OnAdFullScreenContentClosed += () =>
+            {
+                QueueMainThreadExecution(() =>
+                {
+                    this.showingAds = false;
+                    onFinish.Invoke(rewardResult);
+                    rewardedAd.Destroy();
+                    CacheAdmobAd.CheckAdQueueSizeAndPreload<RewardedAd>(placementType);
+                    onRewardAdClosed?.Invoke(placementType, rewardedAd);
+                });
+            };
+
+            this.showingAds = true;
+            rewardedAd.Show((Reward reward) =>
+            {
+                rewardResult.type = RewardResult.Type.Finished;
+                QueueMainThreadExecution(() =>
+                {
+                    onRewardAdUserEarnReward?.Invoke(placementType, rewardedAd, reward);
+                });
+            });
+        }
+        else if (cacheAdState == CacheAdmobAd.AdStatus.LoadFailed)
+        {
+            onFinish?.Invoke(new RewardResult(RewardResult.Type.LoadFailed));
+        }
+        else
+        {
+            onFinish?.Invoke(new RewardResult(RewardResult.Type.Loading, message: "No reward ad is ready yet."));
+        }
+    }
 }
