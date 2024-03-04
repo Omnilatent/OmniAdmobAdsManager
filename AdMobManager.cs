@@ -67,6 +67,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     private AdmobBannerAdObject currentBannerAd;
 
     private InterstitialAd interstitial;
+    public  NativeAdWrapper InstanceNativeAdWrapper;
 
     private RewardResult rewardResult;
 
