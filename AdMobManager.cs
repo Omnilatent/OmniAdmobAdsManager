@@ -139,6 +139,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             var go = new GameObject("UnityMainThreadDispatcher");
             go.AddComponent<UnityMainThreadDispatcher>();
         }
+        InstanceNativeAdWrapper = new NativeAdWrapper(this);
 
         //Debug.Log("OS: " + Application.platform + ". RAM: " + SystemInfo.systemMemorySize);
     }

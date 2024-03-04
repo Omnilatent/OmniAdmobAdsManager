@@ -9,13 +9,13 @@ using UnityEngine;
 public class NativeAdWrapper
 {
     public Action<AdPlacement.Type, NativeAd, AdError> onNativeFailedToLoad;
-    public Action<AdPlacement.Type, NativeAd, AdValue> onNativePaidEvent;
-    public Action<AdPlacement.Type, NativeAd> onNativeLoaded;
+    public Action<AdPlacement.Type, NativeAd, AdValue> onNativePaid;
+    public Action<AdPlacement.Type, NativeAd, bool> onNativeLoaded;
     public Action<AdPlacement.Type, NativeAd> onNativeShow;
     public Action<AdPlacement.Type> onNativeClosed;
     public Action<AdPlacement.Type, NativeAd> onNativeUserClick;
     public Action<AdPlacement.Type> onNativeRequested;
-    public Action<AdPlacement.Type> OnNativeImpression;
+    public Action<AdPlacement.Type, EventArgs> OnNativeImpression;
 
 
     private Dictionary<AdPlacement.Type, NativeAdItem> nativeAdItems;
@@ -46,6 +46,7 @@ public class NativeAdWrapper
         }
         globalAd = new NativeAdItem(AdPlacement.Common_Native);
         globalAd.RequestAd();
+        nativeAdItems.Add(AdPlacement.Common_Native, globalAd);
     }
 
     public void LoadNativeAd(AdPlacement.Type placementId)
@@ -93,7 +94,7 @@ public class NativeAdItem
     {
         if (nativeAdData != null)
         {
-            manager.onNativeLoaded.Invoke(placementId, NativeAdData);
+            manager.onNativeLoaded.Invoke(placementId, NativeAdData, false);
         }
         if (Time.time > nextTimeRefresh && nextTimeRefresh != -1)
         {
@@ -105,8 +106,10 @@ public class NativeAdItem
     {
         isRequesting = true;
         nextTimeRefresh = Time.time + config.time_refresh;
+
         string unitId = CustomMediation.GetAdmobID(placementId);
         AdLoader adLoader = new AdLoader.Builder(unitId).ForNativeAd().Build();
+        manager.onNativeRequested.Invoke(placementId);
         adLoader.OnNativeAdLoaded += (a, b) =>
             AdMobManager.QueueMainThreadExecution(() =>
             {
@@ -127,7 +130,7 @@ public class NativeAdItem
         adLoader.OnNativeAdImpression += (a, b) =>
             AdMobManager.QueueMainThreadExecution(() =>
             {
-                manager.OnNativeImpression.Invoke(placementId);
+                manager.OnNativeImpression.Invoke(placementId, b);
             });
         adLoader.OnNativeAdOpening += (a, b) =>
             AdMobManager.QueueMainThreadExecution(() =>
@@ -136,7 +139,6 @@ public class NativeAdItem
             });
         adLoader.OnAdFailedToLoad += (a, b) => ReloadAds(b, count);
         adLoader.LoadAd(new AdRequest.Builder().Build());
-
     }
 
     private void ReloadAds(AdFailedToLoadEventArgs b, int count)
@@ -156,7 +158,7 @@ public class NativeAdItem
     private void OnNativeAdLoaded(object sender, NativeAdEventArgs e)
     {
         NativeAdData = e.nativeAd;
-        manager.onNativeLoaded.Invoke(placementId, NativeAdData);
+        manager.onNativeLoaded.Invoke(placementId, NativeAdData, true);
     }
 
     public NativeAd NativeAdData { get => nativeAdData; set => nativeAdData = value; }
@@ -173,7 +175,6 @@ public class NativeAdConfig
 
     public static readonly NativeAdConfig Default = new NativeAdConfig()
     {
-        use_global = false,
         number_reload = 3,
         time_refresh = 180,
         fetch_on_startup = true
