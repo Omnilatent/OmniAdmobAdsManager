@@ -22,31 +22,38 @@ public class NativeAdWrapper
     private AdMobManager manager;
     private NativeAdItem globalAd;
     private NativeAdConfig config;
+    private bool loadNativeConfig = false;
 
     public NativeAdWrapper(AdMobManager manager)
     {
         this.manager = manager;
         nativeAdItems = new Dictionary<AdPlacement.Type, NativeAdItem>();
-        GetRMCF();
+        GetGlobalData();
     }
 
-    async void GetRMCF()
+    private void GetGlobalData()
     {
-        await Task.Delay(50);
+        Debug.Log("Native begin load global!");
+        globalAd = new NativeAdItem(AdPlacement.Common_Native, this);
+        globalAd.SetConfig(NativeAdConfig.Default);
+        globalAd.RequestAd();
+        nativeAdItems.Add(AdPlacement.Common_Native, globalAd);
+    }
+
+    public void GetRMCF()
+    {
         var json = FirebaseRemoteConfigHelper.GetString("native_ad_config", null);
-        try
+        config = JsonUtility.FromJson<NativeAdConfig>(json);
+        if (config == null)
         {
-            config = JsonUtility.FromJson<NativeAdConfig>(json);
-        }
-        catch (Exception es)
-        {
-            Debug.LogError("Error when get <color=yellow>NativeAd Config</color> from RMCF!!!\n Reason: " + es.Message);
             Debug.Log("Use NativeAd Config default!");
             config = NativeAdConfig.Default;
         }
-        globalAd = new NativeAdItem(AdPlacement.Common_Native);
-        globalAd.RequestAd();
-        nativeAdItems.Add(AdPlacement.Common_Native, globalAd);
+        else
+        {
+            Debug.Log("Load NativeAd RMCF Success");
+        }
+        loadNativeConfig = true;
     }
 
     public void LoadNativeAd(AdPlacement.Type placementId)
@@ -64,7 +71,8 @@ public class NativeAdWrapper
         else
         {
             globalAd.RequestAd();
-            var native = new NativeAdItem(placementId);
+            var native = new NativeAdItem(placementId, this);
+            native.SetConfig(config);
             native.RequestAd();
             nativeAdItems.Add(placementId, native);
         }
@@ -81,9 +89,10 @@ public class NativeAdItem
     private bool isRequesting = false;
     private float nextTimeRefresh = 0;
 
-    public NativeAdItem(AdPlacement.Type placementId)
+    public NativeAdItem(AdPlacement.Type placementId, NativeAdWrapper manager)
     {
         this.placementId = placementId;
+        this.manager = manager;
     }
     public void SetConfig(NativeAdConfig config)
     {
@@ -92,24 +101,33 @@ public class NativeAdItem
 
     public void RequestAd()
     {
-        if (nativeAdData != null)
+        if (nativeAdData == null)
         {
-            manager.onNativeLoaded.Invoke(placementId, NativeAdData, false);
+            Request(0);
+            return;
         }
+
+        //Debug.Log("Get Native ads from cache: " + placementId);
+        manager.onNativeLoaded?.Invoke(placementId, NativeAdData, false);
         if (Time.time > nextTimeRefresh && nextTimeRefresh != -1)
         {
             Request(0);
         }
     }
 
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="count">number call for reload</param>
     private void Request(int count)
     {
         isRequesting = true;
         nextTimeRefresh = Time.time + config.time_refresh;
-
+        //Debug.Log("Begin request native: " + placementId);
         string unitId = CustomMediation.GetAdmobID(placementId);
         AdLoader adLoader = new AdLoader.Builder(unitId).ForNativeAd().Build();
-        manager.onNativeRequested.Invoke(placementId);
+        manager.onNativeRequested?.Invoke(placementId);
         adLoader.OnNativeAdLoaded += (a, b) =>
             AdMobManager.QueueMainThreadExecution(() =>
             {
@@ -120,22 +138,22 @@ public class NativeAdItem
         adLoader.OnNativeAdClosed += (a, b) =>
             AdMobManager.QueueMainThreadExecution(() =>
             {
-                manager.onNativeClosed.Invoke(placementId);
+                manager.onNativeClosed?.Invoke(placementId);
             });
         adLoader.OnNativeAdClicked += (a, b) =>
             AdMobManager.QueueMainThreadExecution(() =>
             {
-                manager.onNativeUserClick.Invoke(placementId, NativeAdData);
+                manager.onNativeUserClick?.Invoke(placementId, NativeAdData);
             });
         adLoader.OnNativeAdImpression += (a, b) =>
             AdMobManager.QueueMainThreadExecution(() =>
             {
-                manager.OnNativeImpression.Invoke(placementId, b);
+                manager.OnNativeImpression?.Invoke(placementId, b);
             });
         adLoader.OnNativeAdOpening += (a, b) =>
             AdMobManager.QueueMainThreadExecution(() =>
             {
-                manager.onNativeShow.Invoke(placementId, NativeAdData);
+                manager.onNativeShow?.Invoke(placementId, NativeAdData);
             });
         adLoader.OnAdFailedToLoad += (a, b) => ReloadAds(b, count);
         adLoader.LoadAd(new AdRequest.Builder().Build());
@@ -144,9 +162,9 @@ public class NativeAdItem
     private void ReloadAds(AdFailedToLoadEventArgs b, int count)
     {
         count++;
+        manager.onNativeFailedToLoad?.Invoke(placementId, null, b.LoadAdError);
         if (count > config.number_reload)
         {
-            manager.onNativeFailedToLoad.Invoke(placementId, null, b.LoadAdError);
             Request(count);
         }
         else
@@ -158,7 +176,8 @@ public class NativeAdItem
     private void OnNativeAdLoaded(object sender, NativeAdEventArgs e)
     {
         NativeAdData = e.nativeAd;
-        manager.onNativeLoaded.Invoke(placementId, NativeAdData, true);
+        //Debug.Log("Get Native ads from request: " + placementId);
+        manager.onNativeLoaded?.Invoke(placementId, NativeAdData, true);
     }
 
     public NativeAd NativeAdData { get => nativeAdData; set => nativeAdData = value; }
@@ -176,7 +195,7 @@ public class NativeAdConfig
     public static readonly NativeAdConfig Default = new NativeAdConfig()
     {
         number_reload = 3,
-        time_refresh = 180,
+        time_refresh = -1,
         fetch_on_startup = true
     };
 }
