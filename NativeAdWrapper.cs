@@ -21,7 +21,6 @@ public class NativeAdWrapper
     private Dictionary<AdPlacement.Type, NativeAdItem> nativeAdItems;
     private AdMobManager manager;
     private NativeAdItem globalAd;
-    private NativeAdConfig config;
     private bool loadNativeConfig = false;
 
     public NativeAdWrapper(AdMobManager manager)
@@ -35,25 +34,9 @@ public class NativeAdWrapper
     {
         Debug.Log("Native begin load global!");
         globalAd = new NativeAdItem(AdPlacement.Common_Native, this);
-        globalAd.SetConfig(NativeAdConfig.Default);
+        globalAd.IsRefreshData = false;
         globalAd.RequestAd();
         nativeAdItems.Add(AdPlacement.Common_Native, globalAd);
-    }
-
-    public void GetRMCF()
-    {
-        var json = FirebaseRemoteConfigHelper.GetString("native_ad_config", null);
-        config = JsonUtility.FromJson<NativeAdConfig>(json);
-        if (config == null)
-        {
-            Debug.Log("Use NativeAd Config default!");
-            config = NativeAdConfig.Default;
-        }
-        else
-        {
-            Debug.Log("Load NativeAd RMCF Success");
-        }
-        loadNativeConfig = true;
     }
 
     public void LoadNativeAd(AdPlacement.Type placementId)
@@ -72,7 +55,6 @@ public class NativeAdWrapper
         {
             globalAd.RequestAd();
             var native = new NativeAdItem(placementId, this);
-            native.SetConfig(config);
             native.RequestAd();
             nativeAdItems.Add(placementId, native);
         }
@@ -82,26 +64,25 @@ public class NativeAdWrapper
 [System.Serializable]
 public class NativeAdItem
 {
+    public bool IsRefreshData = true;
     private NativeAd nativeAdData;
     private NativeAdWrapper manager;
     private AdPlacement.Type placementId;
-    private NativeAdConfig config;
     private bool isRequesting = false;
     private float nextTimeRefresh = 0;
+    private const int NUMBER_RELOAD = 3;
+
+    private float timeRefresh => AdsManager.TIME_BETWEEN_ADS;
 
     public NativeAdItem(AdPlacement.Type placementId, NativeAdWrapper manager)
     {
         this.placementId = placementId;
         this.manager = manager;
     }
-    public void SetConfig(NativeAdConfig config)
-    {
-        this.config = config;
-    }
 
     public void RequestAd()
     {
-        if (nativeAdData == null)
+        if (nativeAdData == null && !IsRequesting)
         {
             Request(0);
             return;
@@ -109,7 +90,7 @@ public class NativeAdItem
 
         //Debug.Log("Get Native ads from cache: " + placementId);
         manager.onNativeLoaded?.Invoke(placementId, NativeAdData, false);
-        if (Time.time > nextTimeRefresh && nextTimeRefresh != -1)
+        if (IsRefreshData && Time.time > nextTimeRefresh)
         {
             Request(0);
         }
@@ -123,8 +104,7 @@ public class NativeAdItem
     private void Request(int count)
     {
         isRequesting = true;
-        nextTimeRefresh = Time.time + config.time_refresh;
-        //Debug.Log("Begin request native: " + placementId);
+        nextTimeRefresh = Time.time + timeRefresh;
         string unitId = CustomMediation.GetAdmobID(placementId);
         AdLoader adLoader = new AdLoader.Builder(unitId).ForNativeAd().Build();
         manager.onNativeRequested?.Invoke(placementId);
@@ -163,12 +143,13 @@ public class NativeAdItem
     {
         count++;
         manager.onNativeFailedToLoad?.Invoke(placementId, null, b.LoadAdError);
-        if (count > config.number_reload)
+        if (count > NUMBER_RELOAD)
         {
             Request(count);
         }
         else
         {
+            count = 0;
             isRequesting = false;
         }
     }
@@ -178,25 +159,13 @@ public class NativeAdItem
         NativeAdData = e.nativeAd;
         //Debug.Log("Get Native ads from request: " + placementId);
         manager.onNativeLoaded?.Invoke(placementId, NativeAdData, true);
+        NativeAdData.OnPaidEvent += (sender, eventData) =>
+        {
+            manager.onNativePaid.Invoke(placementId, NativeAdData, eventData.AdValue);
+        };
     }
 
     public NativeAd NativeAdData { get => nativeAdData; set => nativeAdData = value; }
-
     public bool IsRequesting { get => isRequesting; }
-}
-
-[System.Serializable]
-public class NativeAdConfig
-{
-    public bool fetch_on_startup;
-    public int number_reload;
-    public float time_refresh;
-
-    public static readonly NativeAdConfig Default = new NativeAdConfig()
-    {
-        number_reload = 3,
-        time_refresh = -1,
-        fetch_on_startup = true
-    };
 }
 
