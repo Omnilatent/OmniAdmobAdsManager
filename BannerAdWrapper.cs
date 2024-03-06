@@ -42,17 +42,12 @@ public class BannerAdWrapper
             return;
         }
         isShow = true;
-        if (bannerAdItems.ContainsKey(placementId))
-        {
-            var banner = bannerAdItems[placementId];
-            banner.RequestAd();
-        }
-        else
+        if (!bannerAdItems.ContainsKey(placementId))
         {
             var banner = new BannerItem(this, placementId, collapsiable, position);
-            banner.RequestAd();
             bannerAdItems.Add(placementId, banner);
         }
+        bannerAdItems[placementId].RequestAd();
     }
 
     public void ShowBanner(AdPlacement.Type placementId)
@@ -145,6 +140,7 @@ public class BannerItem
             return;
         }
         nextTimeRefresh = Time.time + timeRefresh;
+        Debug.Log($"Request New Banner: {placementId}");
         string _adUnitId = CustomMediation.GetAdmobID(placementId);
         AdSize adaptiveSize =
                  AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth);
@@ -153,12 +149,13 @@ public class BannerItem
         if (collapsiable)
         {
             adRequest.Extras.Add("collapsible", "bottom");
+            adRequest.Extras.Add("collapsible_request_id", Guid.NewGuid().ToString());
         }
         LoadBanner(0);
         ListerToCacheAdEvent();
     }
 
-    private async void LoadBanner(int count = -1)
+    private void LoadBanner(int count = -1)
     {
         if (count != -1)
         {
@@ -174,10 +171,6 @@ public class BannerItem
             isRequest = false;
             _cacheBannerView?.Destroy();
             return;
-        }
-        else
-        {
-            await Task.Delay(MILLISECONDS_DELAY_RELOAD);
         }
         isRequest = true;
         wrapper.manager.onBannerRequested.Invoke(placementId);
@@ -232,8 +225,12 @@ public class BannerItem
     {
         if (_bannerView == null)
             isShow = false;
-        _bannerView.Show();
-        isShow = true;
-        wrapper.manager.onBannerShow?.Invoke(placementId, _bannerView);
+        else
+        {
+            _bannerView.Show();
+            isShow = true;
+            wrapper.manager.onBannerShow?.Invoke(placementId, _bannerView);
+        }
+
     }
 }
