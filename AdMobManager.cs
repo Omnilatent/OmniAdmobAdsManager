@@ -67,7 +67,8 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     private AdmobBannerAdObject currentBannerAd;
 
     private InterstitialAd interstitial;
-    public  NativeAdWrapper InstanceNativeAdWrapper;
+    public NativeAdWrapper InstanceNativeAdWrapper;
+    public BannerAdWrapper InstanceBannerAdWrapper;
 
     private RewardResult rewardResult;
 
@@ -80,7 +81,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public float time { get; protected set; }
 
     public bool showingAds { get; internal set; }
-    
+
     /// <summary>
     /// If true, Interstitial's OnAdClosed will be forced to invoke on ad show
     /// </summary>
@@ -140,6 +141,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
             go.AddComponent<UnityMainThreadDispatcher>();
         }
         InstanceNativeAdWrapper = new NativeAdWrapper(this);
+        InstanceBannerAdWrapper = new BannerAdWrapper(this);
 
         //Debug.Log("OS: " + Application.platform + ". RAM: " + SystemInfo.systemMemorySize);
     }
@@ -205,6 +207,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public Action<AdPlacement.Type, BannerView> onBannerHide;
     public Action<AdPlacement.Type, BannerView> onBannerUserClick;
     public Action<AdPlacement.Type> onBannerRequested;
+    public Action<AdPlacement.Type, BannerView> onBannerImpression;
     private BannerWrapper _bannerWrapper;
 
     internal BannerWrapper bannerWrapper
@@ -217,22 +220,26 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         }
     }
 
+    [Obsolete("Use AdModManager.instance.InstanceBannerAdWrapper", true)]
     public void ShowBanner(AdPlacement.Type placementId, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
         ShowBanner(placementId, Omnilatent.AdsMediation.BannerTransform.defaultValue, onAdLoaded);
     }
 
+    [Obsolete("Use AdModManager.instance.InstanceBannerAdWrapper", true)]
     public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform,
         AdsManager.InterstitialDelegate onAdLoaded = null)
     {
         bannerWrapper.ShowBanner(placementType, bannerTransform, onAdLoaded);
     }
 
+    [Obsolete("Use AdModManager.instance.InstanceBannerAdWrapper", true)]
     public void HideBanner()
     {
         bannerWrapper.HideBanner();
     }
 
+    [Obsolete("Use AdModManager.instance.InstanceBannerAdWrapper", true)]
     public void DestroyBanner()
     {
         bannerWrapper.DestroyBanner();

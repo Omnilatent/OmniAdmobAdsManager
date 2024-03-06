@@ -8,15 +8,27 @@ using UnityEngine;
 [System.Serializable]
 public class NativeAdWrapper
 {
+    const string rmcf = "time_refresh_ad_native";
     private Dictionary<AdPlacement.Type, NativeAdItem> nativeAdItems;
     public AdMobManager manager;
     private NativeAdItem globalAd;
+    public float timeReloadAd;
 
     public NativeAdWrapper(AdMobManager manager)
     {
         this.manager = manager;
         nativeAdItems = new Dictionary<AdPlacement.Type, NativeAdItem>();
+        timeReloadAd = 10;
         GetGlobalData();
+        FirebaseRemoteConfigHelper.CheckAndHandleFetchConfig(FetchRMCF);
+    }
+
+    private void FetchRMCF(object sender, bool success)
+    {
+        if (success)
+        {
+            timeReloadAd = FirebaseRemoteConfigHelper.GetInt(rmcf, 10);
+        }
     }
 
     private void GetGlobalData()
@@ -61,7 +73,7 @@ public class NativeAdItem
     private float nextTimeRefresh = 0;
     private const int NUMBER_RELOAD = 3;
 
-    private float timeRefresh => AdsManager.TIME_BETWEEN_ADS;
+    private float timeRefresh => manager.timeReloadAd;
 
     public NativeAdItem(AdPlacement.Type placementId, NativeAdWrapper manager)
     {
@@ -79,7 +91,7 @@ public class NativeAdItem
 
         //Debug.Log("Get Native ads from cache: " + placementId);
         manager.manager.onNativeLoaded?.Invoke(placementId, NativeAdData, false);
-        if (IsRefreshData && Time.time > nextTimeRefresh)
+        if (IsRefreshData && Time.time > nextTimeRefresh && timeRefresh != -1)
         {
             Request(0);
         }
