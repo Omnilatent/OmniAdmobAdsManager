@@ -173,7 +173,7 @@ public class BannerItem
             return;
         }
         isRequest = true;
-        wrapper.manager.onBannerRequested.Invoke(placementId);
+        wrapper.manager.onBannerRequested?.Invoke(placementId);
         _cacheBannerView.LoadAd(adRequest);
     }
 
