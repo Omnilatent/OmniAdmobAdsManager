@@ -66,7 +66,9 @@ public class NativeAdWrapper
 public class NativeAdItem
 {
     public bool IsRefreshData = true;
+#if OMNILATENT_NATIVE_ADS
     private NativeAd nativeAdData;
+#endif
     private NativeAdWrapper manager;
     private AdPlacement.Type placementId;
     private bool isRequesting = false;
@@ -83,6 +85,7 @@ public class NativeAdItem
 
     public void RequestAd()
     {
+#if OMNILATENT_NATIVE_ADS
         if (nativeAdData == null && !IsRequesting)
         {
             Request(0);
@@ -95,6 +98,7 @@ public class NativeAdItem
         {
             Request(0);
         }
+#endif
     }
 
 
@@ -104,6 +108,7 @@ public class NativeAdItem
     /// <param name="count">number call for reload</param>
     private void Request(int count)
     {
+#if OMNILATENT_NATIVE_ADS
         isRequesting = true;
         nextTimeRefresh = Time.time + timeRefresh;
         string unitId = CustomMediation.GetAdmobID(placementId);
@@ -172,9 +177,13 @@ public class NativeAdItem
         {
             manager.manager.onNativePaid.Invoke(placementId, NativeAdData, eventData.AdValue);
         };
+#endif
     }
 
+#if OMNILATENT_NATIVE_ADS
     public NativeAd NativeAdData { get => nativeAdData; set => nativeAdData = value; }
+#endif
     public bool IsRequesting { get => isRequesting; }
+
 }
 

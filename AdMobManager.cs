@@ -284,6 +284,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     #endregion
 
     #region Native Ad
+#if OMNILATENT_NATIVE_ADS
     public Action<AdPlacement.Type, NativeAd, AdError> onNativeFailedToLoad;
     public Action<AdPlacement.Type, NativeAd, AdValue> onNativePaid;
     public Action<AdPlacement.Type, NativeAd, bool> onNativeLoaded;
@@ -292,5 +293,6 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public Action<AdPlacement.Type, NativeAd> onNativeUserClick;
     public Action<AdPlacement.Type> onNativeRequested;
     public Action<AdPlacement.Type, EventArgs> OnNativeImpression;
+#endif
     #endregion
 }
