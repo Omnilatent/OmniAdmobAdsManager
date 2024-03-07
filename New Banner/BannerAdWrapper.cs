@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
+[System.Serializable]
 public class BannerAdWrapper
 {
     const string rmcf = "time_refresh_ad_banner";
     private Dictionary<AdPlacement.Type, BannerItem> bannerAdItems;
     public AdMobManager manager;
-    AdPlacement.Type lastBannerShow;
     public float timeReloadAd;
     bool isShow = false;
 
@@ -54,13 +54,13 @@ public class BannerAdWrapper
     {
         if (!isShow)
         {
+            Debug.LogError("Ad Banner don't show! " + placementId);
             return;
         }
         foreach (var e in bannerAdItems)
         {
             e.Value.IsShowing = e.Key.Equals(placementId);
         }
-        lastBannerShow = placementId;
     }
 
     public void HideAll()
@@ -68,18 +68,8 @@ public class BannerAdWrapper
         isShow = false;
         foreach (var e in bannerAdItems)
         {
-            if (e.Value.IsShowing)
-            {
-                lastBannerShow = e.Key;
-            }
             e.Value.IsShowing = false;
         }
-    }
-
-    public void ShowBanner()
-    {
-        isShow = true;
-        ShowBanner(lastBannerShow);
     }
 }
 
@@ -175,6 +165,17 @@ public class BannerItem
         isRequest = true;
         wrapper.manager.onBannerRequested?.Invoke(placementId);
         _cacheBannerView.LoadAd(adRequest);
+#if UNITY_EDITOR
+        isRequest = false;
+        _bannerView?.Destroy();
+        _bannerView = _cacheBannerView;
+        ListenToAdEvents();
+        wrapper.manager.onBannerLoaded?.Invoke(placementId, _bannerView);
+        if (!IsShowing)
+        {
+            _bannerView.Hide();
+        }
+#endif
     }
 
     private void ListerToCacheAdEvent()
@@ -193,6 +194,7 @@ public class BannerItem
         };
         _cacheBannerView.OnBannerAdLoadFailed += (LoadAdError error) =>
         {
+            Debug.LogError($"Banner load fail {placementId}: " + error.GetMessage());
             wrapper.manager.onBannerFailedToLoad?.Invoke(placementId, _bannerView, error);
             LoadBanner();
         };
@@ -216,6 +218,7 @@ public class BannerItem
 
     private void HideBanner()
     {
+        Debug.Log("Banner Hide " + placementId);
         _bannerView?.Hide();
         isShow = false;
         wrapper.manager.onBannerHide?.Invoke(placementId, _bannerView);
@@ -224,9 +227,13 @@ public class BannerItem
     private void ShowBanner()
     {
         if (_bannerView == null)
+        {
+            Debug.LogError("Banner is not show by banner view is null!" + placementId);
             isShow = false;
+        }
         else
         {
+            Debug.Log("Banner show!" + placementId);
             _bannerView.Show();
             isShow = true;
             wrapper.manager.onBannerShow?.Invoke(placementId, _bannerView);
