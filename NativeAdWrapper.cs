@@ -92,7 +92,7 @@ public class NativeAdItem
             return;
         }
 
-        //Debug.Log("Get Native ads from cache: " + placementId);
+        Debug.Log("Get Native ads from cache: " + placementId);
         manager.manager.onNativeLoaded?.Invoke(placementId, NativeAdData, false);
         if (IsRefreshData && Time.time > nextTimeRefresh && timeRefresh != -1)
         {
@@ -157,12 +157,13 @@ public class NativeAdItem
     {
         count++;
         manager.manager.onNativeFailedToLoad?.Invoke(placementId, null, b.LoadAdError);
-        if (count > NUMBER_RELOAD)
+        if (count < NUMBER_RELOAD)
         {
             Request(count);
         }
         else
         {
+            Debug.LogError("Out of request native ad " + placementId);
             count = 0;
             isRequesting = false;
         }
@@ -171,7 +172,7 @@ public class NativeAdItem
     private void OnNativeAdLoaded(object sender, NativeAdEventArgs e)
     {
         NativeAdData = e.nativeAd;
-        //Debug.Log("Get Native ads from request: " + placementId);
+        Debug.Log("Get Native ads from request: " + placementId);
         manager.manager.onNativeLoaded?.Invoke(placementId, NativeAdData, true);
         NativeAdData.OnPaidEvent += (sender, eventData) =>
         {
