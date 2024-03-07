@@ -50,6 +50,10 @@ public class NativeAdWrapper
         if (nativeAdItems.ContainsKey(placementId))
         {
             var native = nativeAdItems[placementId];
+            if (native.NativeAdData == null)
+            {
+                globalAd.RequestAd();
+            }
             native.RequestAd();
         }
         else
