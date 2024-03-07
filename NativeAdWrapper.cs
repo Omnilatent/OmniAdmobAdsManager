@@ -145,7 +145,11 @@ public class NativeAdItem
             {
                 manager.manager.onNativeShow?.Invoke(placementId, NativeAdData);
             });
-        adLoader.OnAdFailedToLoad += (a, b) => ReloadAds(b, count);
+        adLoader.OnAdFailedToLoad += (a, b) =>
+            QueueMainThreadExecution(() =>
+            {
+                ReloadAds(b, count);
+            });
     }
 
     public static void QueueMainThreadExecution(Action action)
