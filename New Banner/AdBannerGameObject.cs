@@ -24,13 +24,20 @@ public class AdBannerGameObject : MonoBehaviour
         if (showBanner)
         {
             AdMobManager.instance.InstanceBannerAdWrapper.LoadAd((int)placementId, collapsible, adPosition);
+            AdMobManager.instance.onBannerLoaded += OnBannerLoad;
+            AdMobManager.instance.InstanceBannerAdWrapper.OnChangeEvent.AddListener(OnChangeEvent);
             return;
         }
         else
         {
-            placementId =  BannerType.None;
-            AdMobManager.instance.InstanceBannerAdWrapper.HideAll();
+            placementId = BannerType.None;
+            AdMobManager.instance.InstanceBannerAdWrapper.HideBannerObj();
         }
+    }
+
+    private void OnChangeEvent()
+    {
+        AdMobManager.instance.InstanceBannerAdWrapper.ShowBanner((int)placementId);
     }
 
     private void OnBannerLoad(AdPlacement.Type placementId, BannerView view)
@@ -41,43 +48,11 @@ public class AdBannerGameObject : MonoBehaviour
         }
     }
 
-    private void OnDisable()
-    {
-        AdMobManager.instance.onBannerLoaded -= OnBannerLoad;
-#if UNITY_IOS
-        AdMobManager.instance.onInterstitialClosed -= (a, b) => Start();
-        AdMobManager.instance.onAOAdDidPresentFullScreenContent -= (a, b) => Start();
-#endif
-    }
-
-    private void OnEnable()
-    {
-        AdMobManager.instance.onBannerLoaded += OnBannerLoad;
-#if UNITY_IOS
-        AdMobManager.instance.onInterstitialClosed += (a, b) => Start();
-        AdMobManager.instance.onAOAdDidPresentFullScreenContent += (a, b) => Start();
-#endif
-    }
-
     private void OnDestroy()
     {
-        AdMobManager.instance.onBannerLoaded -= OnBannerLoad;
-#if UNITY_IOS
-        AdMobManager.instance.onInterstitialClosed -= (a, b) => Start();
-        AdMobManager.instance.onAOAdDidPresentFullScreenContent -= (a, b) => Start();
-#endif
-    }
-
-
-    private void OnApplicationFocus(bool focus)
-    {
-        if (focus)
-        {
-            Start();
-        }
+        if (showBanner)
+            AdMobManager.instance.onBannerLoaded -= OnBannerLoad;
         else
-        {
-            AdMobManager.instance.InstanceBannerAdWrapper.HideAll();
-        }
+            AdMobManager.instance.InstanceBannerAdWrapper.ShowBannerObj();
     }
 }

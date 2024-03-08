@@ -4,26 +4,72 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Events;
+
+public class BannerAdFocus: MonoBehaviour
+{
+    private void Awake()
+    {
+        DontDestroyOnLoad(gameObject);
+    }
+
+    private void Start()
+    {
+#if UNITY_IOS
+        AdMobManager.instance.onInterstitialClosed += (a, b) => OnApplicationFocus(true);
+        AdMobManager.instance.onAOAdDidPresentFullScreenContent += (a, b) => OnApplicationFocus(true);
+        AdMobManager.instance.onInterstitialOpening += (a, b) => OnApplicationFocus(false);
+        AdMobManager.instance.onAOAdBeforePresentFullScreenContent += (a, b) => OnApplicationFocus(false);
+#endif
+    }
+
+    private void OnApplicationFocus(bool focus)
+    {
+        if (focus)
+        {
+            AdMobManager.instance.InstanceBannerAdWrapper.ShowBannerFocus();
+        }
+        else
+        {
+            AdMobManager.instance.InstanceBannerAdWrapper.HideBannerFocus();
+        }
+    }
+}
 
 [System.Serializable]
 public class BannerAdWrapper
 {
     const string rmcf = "time_refresh_ad_banner";
+    const string focus_condition = "focus";
+    const string obj_condition = "obj";
+
     private Dictionary<AdPlacement.Type, BannerItem> bannerAdItems;
     public AdMobManager manager;
     public float timeReloadAd;
-    bool isShow = false;
+    public Dictionary<string, bool> keyShowBanner;
+    public UnityEvent OnChangeEvent;
 
     public BannerAdWrapper(AdMobManager manager)
     {
         this.manager = manager;
+        InitObject();
         bannerAdItems = new Dictionary<AdPlacement.Type, BannerItem>();
+        keyShowBanner = new Dictionary<string, bool>();
+        keyShowBanner.Add(focus_condition, false);
+        keyShowBanner.Add(obj_condition, false);
+        OnChangeEvent = new UnityEvent();
 #if UNITY_IOS
         AdMobManager.instance.onAOAdBeforePresentFullScreenContent += (a, b) => HideAll();
         AdMobManager.instance.onInterstitialOpening += (a, b) => HideAll();
 #endif
         timeReloadAd = 10;
         FirebaseRemoteConfigHelper.CheckAndHandleFetchConfig(FetchRMCF);
+    }
+
+    private void InitObject()
+    {
+        var obj = new GameObject("Banner Ad Focus");
+        obj.AddComponent<BannerAdFocus>();
     }
 
     private void FetchRMCF(object sender, bool success)
@@ -38,10 +84,11 @@ public class BannerAdWrapper
     {
         if (AdsManager.Instance.DoNotShowAds(placementId))
         {
+            keyShowBanner.Add(placementId.ToString(), false);
             Debug.LogWarning($"Ad {placementId} was hide by AdsManager!");
             return;
         }
-        isShow = true;
+        keyShowBanner.Add(placementId.ToString(), true);
         if (!bannerAdItems.ContainsKey(placementId))
         {
             var banner = new BannerItem(this, placementId, collapsiable, position);
@@ -52,7 +99,7 @@ public class BannerAdWrapper
 
     public void ShowBanner(AdPlacement.Type placementId)
     {
-        if (!isShow)
+        if (!CheckShowAd(placementId))
         {
             Debug.LogError("Ad Banner don't show! " + placementId);
             return;
@@ -63,13 +110,43 @@ public class BannerAdWrapper
         }
     }
 
+    private bool CheckShowAd(AdPlacement.Type placementId)
+    {
+        return keyShowBanner[focus_condition] && keyShowBanner[obj_condition] && keyShowBanner[placementId.ToString()];
+    }
+
     public void HideAll()
     {
-        isShow = false;
         foreach (var e in bannerAdItems)
         {
             e.Value.IsShowing = false;
         }
+    }
+
+    internal void ShowBannerFocus()
+    {
+        keyShowBanner[focus_condition] = true;
+        OnChangeEvent.Invoke();
+    }
+
+    internal void HideBannerFocus()
+    {
+        keyShowBanner[focus_condition] = false;
+        HideAll();
+        OnChangeEvent.Invoke();
+    }
+
+    internal void ShowBannerObj()
+    {
+        keyShowBanner[obj_condition] = true;
+        OnChangeEvent.Invoke();
+    }
+
+    internal void HideBannerObj()
+    {
+        keyShowBanner[obj_condition] = false;
+        HideAll();
+        OnChangeEvent.Invoke();
     }
 }
 
