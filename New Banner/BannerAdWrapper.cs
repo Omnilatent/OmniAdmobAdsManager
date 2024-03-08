@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class BannerAdFocus: MonoBehaviour
+public class BannerAdFocus : MonoBehaviour
 {
     private void Awake()
     {
@@ -18,21 +18,34 @@ public class BannerAdFocus: MonoBehaviour
 #if UNITY_IOS
         AdMobManager.instance.onInterstitialClosed += (a, b) => OnApplicationFocus(true);
         AdMobManager.instance.onAOAdDidPresentFullScreenContent += (a, b) => OnApplicationFocus(true);
-        AdMobManager.instance.onInterstitialOpening += (a, b) => OnApplicationFocus(false);
-        AdMobManager.instance.onAOAdBeforePresentFullScreenContent += (a, b) => OnApplicationFocus(false);
+        AdMobManager.instance.onInterstitialOpening += (a, b) => OnApplicationPause(true);
+        AdMobManager.instance.onAOAdBeforePresentFullScreenContent += (a, b) => OnApplicationPause(true);
 #endif
     }
 
-    private void OnApplicationFocus(bool focus)
+    private void OnApplicationPause(bool pause)
     {
-        if (focus)
+        if (!pause)
         {
-            AdMobManager.instance.InstanceBannerAdWrapper.ShowBannerFocus();
+            BannerItem.QueueMainThreadExecution(() =>
+            {
+                StopAllCoroutines();
+                StartCoroutine(DelayTocallAction(AdMobManager.instance.InstanceBannerAdWrapper.ShowBannerFocus));
+            });
         }
         else
         {
-            AdMobManager.instance.InstanceBannerAdWrapper.HideBannerFocus();
-        }
+            BannerItem.QueueMainThreadExecution(() =>
+            {
+                AdMobManager.instance.InstanceBannerAdWrapper.HideBannerFocus();
+            });
+        };
+    }
+
+    IEnumerator DelayTocallAction(Action action)
+    {
+        yield return new WaitForSeconds(0.5f);
+        action.Invoke();
     }
 }
 
@@ -55,8 +68,8 @@ public class BannerAdWrapper
         InitObject();
         bannerAdItems = new Dictionary<AdPlacement.Type, BannerItem>();
         keyShowBanner = new Dictionary<string, bool>();
-        keyShowBanner.Add(focus_condition, false);
-        keyShowBanner.Add(obj_condition, false);
+        keyShowBanner.Add(focus_condition, true);
+        keyShowBanner.Add(obj_condition, true);
         OnChangeEvent = new UnityEvent();
 #if UNITY_IOS
         AdMobManager.instance.onAOAdBeforePresentFullScreenContent += (a, b) => HideAll();
@@ -82,13 +95,17 @@ public class BannerAdWrapper
 
     public void LoadAd(AdPlacement.Type placementId, bool collapsiable, AdPosition position)
     {
+        if (!keyShowBanner.ContainsKey(placementId.ToString()))
+        {
+            keyShowBanner.Add(placementId.ToString(), true);
+        }
         if (AdsManager.Instance.DoNotShowAds(placementId))
         {
-            keyShowBanner.Add(placementId.ToString(), false);
+            keyShowBanner[placementId.ToString()] = false;
             Debug.LogWarning($"Ad {placementId} was hide by AdsManager!");
             return;
         }
-        keyShowBanner.Add(placementId.ToString(), true);
+        keyShowBanner[placementId.ToString()] = true;
         if (!bannerAdItems.ContainsKey(placementId))
         {
             var banner = new BannerItem(this, placementId, collapsiable, position);
@@ -101,7 +118,8 @@ public class BannerAdWrapper
     {
         if (!CheckShowAd(placementId))
         {
-            Debug.LogError("Ad Banner don't show! " + placementId);
+            Debug.Log("<color=red>Ad Banner don't show! </color>" + placementId);
+            Debug.Log($"<color=red>{ keyShowBanner[focus_condition]},{keyShowBanner[obj_condition]},{keyShowBanner[placementId.ToString()]}</color>");
             return;
         }
         foreach (var e in bannerAdItems)
@@ -153,7 +171,7 @@ public class BannerAdWrapper
 [System.Serializable]
 public class BannerItem
 {
-    private const int NUMBER_RELOAD = 3;
+    private const int NUMBER_RELOAD = 10;
     private const int MILLISECONDS_DELAY_RELOAD = 2000;
     private BannerView _bannerView;
     private BannerView _cacheBannerView;
@@ -243,6 +261,12 @@ public class BannerItem
         wrapper.manager.onBannerRequested?.Invoke(placementId);
         _cacheBannerView.LoadAd(adRequest);
 #if UNITY_EDITOR
+        FakeEventBanner();
+#endif
+    }
+
+    private void FakeEventBanner()
+    {
         isRequest = false;
         _bannerView?.Destroy();
         _bannerView = _cacheBannerView;
@@ -252,7 +276,6 @@ public class BannerItem
         {
             _bannerView.Hide();
         }
-#endif
     }
 
     private void ListerToCacheAdEvent()
@@ -271,7 +294,7 @@ public class BannerItem
         };
         _cacheBannerView.OnBannerAdLoadFailed += (LoadAdError error) =>
         {
-            Debug.LogError($"Banner load fail {placementId}: " + error.GetMessage());
+            Debug.Log($"<color=red>Banner load fail {placementId}: <color=red>" + error.GetMessage());
             wrapper.manager.onBannerFailedToLoad?.Invoke(placementId, _bannerView, error);
             LoadBanner();
         };
@@ -279,18 +302,26 @@ public class BannerItem
 
     private void ListenToAdEvents()
     {
-        _bannerView.OnAdPaid += (AdValue adValue) =>
+        _bannerView.OnAdPaid += (AdValue adValue) => QueueMainThreadExecution(() =>
         {
             wrapper.manager.onBannerPaidEvent?.Invoke(placementId, _bannerView, adValue);
-        };
-        _bannerView.OnAdImpressionRecorded += () =>
+        });
+        _bannerView.OnAdImpressionRecorded += () => QueueMainThreadExecution(() =>
         {
             wrapper.manager.onBannerImpression?.Invoke(placementId, _bannerView);
-        };
-        _bannerView.OnAdClicked += () =>
+        });
+        _bannerView.OnAdClicked += () => QueueMainThreadExecution(() =>
         {
             wrapper.manager.onBannerUserClick?.Invoke(placementId, _bannerView);
-        };
+        });
+    }
+    public static void QueueMainThreadExecution(Action action)
+    {
+#if UNITY_ANDROID
+        UnityMainThreadDispatcher.Instance().Enqueue(() => { action.Invoke(); });
+#else
+        action.Invoke();
+#endif
     }
 
     private void HideBanner()

@@ -23,9 +23,9 @@ public class AdBannerGameObject : MonoBehaviour
     {
         if (showBanner)
         {
-            AdMobManager.instance.InstanceBannerAdWrapper.LoadAd((int)placementId, collapsible, adPosition);
             AdMobManager.instance.onBannerLoaded += OnBannerLoad;
             AdMobManager.instance.InstanceBannerAdWrapper.OnChangeEvent.AddListener(OnChangeEvent);
+            AdMobManager.instance.InstanceBannerAdWrapper.LoadAd((int)placementId, collapsible, adPosition);
             return;
         }
         else
