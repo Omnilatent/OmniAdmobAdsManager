@@ -72,6 +72,8 @@ public class NativeAdItem
     public bool IsRefreshData = true;
 #if OMNILATENT_NATIVE_ADS
     private NativeAd nativeAdData;
+#else
+    private object nativeAdData;
 #endif
     private NativeAdWrapper manager;
     private AdPlacement.Type placementId;
@@ -191,6 +193,8 @@ public class NativeAdItem
 
 #if OMNILATENT_NATIVE_ADS
     public NativeAd NativeAdData { get => nativeAdData; set => nativeAdData = value; }
+#else
+    public object NativeAdData { get => nativeAdData; set => nativeAdData = value; }
 #endif
     public bool IsRequesting { get => isRequesting; }
 
