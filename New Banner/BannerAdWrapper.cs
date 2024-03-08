@@ -141,6 +141,14 @@ public class BannerAdWrapper
         }
     }
 
+    private void DestroyAll()
+    {
+        foreach (var e in bannerAdItems)
+        {
+            e.Value.Destroy();
+        }
+    }
+
     internal void ShowBannerFocus()
     {
         keyShowBanner[focus_condition] = true;
@@ -150,7 +158,7 @@ public class BannerAdWrapper
     internal void HideBannerFocus()
     {
         keyShowBanner[focus_condition] = false;
-        HideAll();
+        DestroyAll();
         OnChangeEvent.Invoke();
     }
 
@@ -347,5 +355,14 @@ public class BannerItem
             wrapper.manager.onBannerShow?.Invoke(placementId, _bannerView);
         }
 
+    }
+
+    internal void Destroy()
+    {
+        if(_bannerView != null)
+        {
+            _bannerView.Destroy();
+            IsShowing = false;;
+        }
     }
 }
