@@ -27,6 +27,8 @@ public class NativeAdGameObject : MonoBehaviour
         _canvasGroup.alpha = 0f;
     }
 
+#if OMNILATENT_NATIVE_ADS
+
     private void Start()
     {
 #if UNITY_EDITOR
@@ -181,6 +183,7 @@ public class NativeAdGameObject : MonoBehaviour
         gameObject.SetActive(show);
         _canvasGroup.alpha = show ? 1 : 0;
     }
+#endif
 }
 
 [System.Serializable]
