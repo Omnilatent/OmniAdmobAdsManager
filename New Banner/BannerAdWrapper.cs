@@ -93,7 +93,7 @@ public class BannerAdWrapper
         }
     }
 
-    public void LoadAd(AdPlacement.Type placementId, bool collapsiable, AdPosition position)
+    public void LoadAd(AdPlacement.Type placementId, bool collapsiable, AdPosition position, AdSize adSize)
     {
         if (!keyShowBanner.ContainsKey(placementId.ToString()))
         {
@@ -108,7 +108,7 @@ public class BannerAdWrapper
         keyShowBanner[placementId.ToString()] = true;
         if (!bannerAdItems.ContainsKey(placementId))
         {
-            var banner = new BannerItem(this, placementId, collapsiable, position);
+            var banner = new BannerItem(this, placementId, collapsiable, position, adSize);
             bannerAdItems.Add(placementId, banner);
         }
         bannerAdItems[placementId].RequestAd();
@@ -187,6 +187,7 @@ public class BannerItem
     private AdPlacement.Type placementId;
     private bool collapsiable;
     private AdPosition position;
+    private AdSize adSize;
     private BannerAdWrapper wrapper;
     private bool isShow = false;
     private bool isRequest = false;
@@ -210,12 +211,13 @@ public class BannerItem
         }
     }
 
-    public BannerItem(BannerAdWrapper wrapper, AdPlacement.Type placementId, bool collapsiable, AdPosition position)
+    public BannerItem(BannerAdWrapper wrapper, AdPlacement.Type placementId, bool collapsiable, AdPosition position, AdSize adSize)
     {
         this.wrapper = wrapper;
         this.placementId = placementId;
         this.collapsiable = collapsiable;
         this.position = position;
+        this.adSize = adSize;
     }
 
     public void RequestAd()
@@ -235,9 +237,7 @@ public class BannerItem
         nextTimeRefresh = Time.time + timeRefresh;
         Debug.Log($"Request New Banner: {placementId}");
         string _adUnitId = CustomMediation.GetAdmobID(placementId);
-        AdSize adaptiveSize =
-                 AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth);
-        _cacheBannerView = new BannerView(_adUnitId, adaptiveSize, position);
+        _cacheBannerView = new BannerView(_adUnitId, adSize, position);
         adRequest = new AdRequest();
         if (collapsiable)
         {

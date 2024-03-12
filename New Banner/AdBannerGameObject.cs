@@ -1,6 +1,8 @@
 using GoogleMobileAds.Api;
 using Omnilatent.AdsMediation;
-//using Sirenix.OdinInspector;
+#if ODIN_INSPECTOR
+using Sirenix.OdinInspector;
+#endif
 using System;
 using UnityEngine;
 using AdPosition = GoogleMobileAds.Api.AdPosition;
@@ -8,18 +10,31 @@ using AdPosition = GoogleMobileAds.Api.AdPosition;
 public class AdBannerGameObject : MonoBehaviour
 {
     public bool showBanner;
-    //[ShowIf("showBanner")]
+    [ShowIf("showBanner")]
     public int placementId;
-    //[ShowIf("showBanner")]
+    [ShowIf("showBanner")]
     public AdPosition adPosition;
     public bool collapsible;
+    public bool adaptiveSize = true;
+    [HideIf("adaptiveSize")]
+    public Vector2 size;
+    private AdSize adSize;
+
     void Start()
     {
         if (showBanner)
         {
             AdMobManager.instance.onBannerLoaded += OnBannerLoad;
             AdMobManager.instance.InstanceBannerAdWrapper.OnChangeEvent.AddListener(OnChangeEvent);
-            AdMobManager.instance.InstanceBannerAdWrapper.LoadAd((int)placementId, collapsible, adPosition);
+            if (adaptiveSize)
+            {
+                adSize = AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth);
+            }
+            else
+            {
+                adSize = new AdSize((int)size.x, (int)size.y);
+            }
+            AdMobManager.instance.InstanceBannerAdWrapper.LoadAd((int)placementId, collapsible, adPosition, adSize);
             return;
         }
         else
