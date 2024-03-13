@@ -44,7 +44,7 @@ public class BannerAdFocus : MonoBehaviour
 
     IEnumerator DelayTocallAction(Action action)
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(1f);
         action.Invoke();
     }
 }
@@ -346,6 +346,7 @@ public class BannerItem
         {
             Debug.LogError("Banner is not show by banner view is null!" + placementId);
             isShow = false;
+            RequestAd();
         }
         else
         {
@@ -362,7 +363,8 @@ public class BannerItem
         if(_bannerView != null)
         {
             _bannerView.Destroy();
-            IsShowing = false;;
+            _bannerView = null;
+            IsShowing = false;
         }
     }
 }
