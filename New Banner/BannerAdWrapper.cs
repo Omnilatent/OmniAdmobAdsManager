@@ -193,6 +193,7 @@ public class BannerItem
     private bool isRequest = false;
     private int numberLoad = 0;
     private float nextTimeRefresh = 0;
+    private LoadAdError error;
     private float timeRefresh => wrapper.timeReloadAd;
 
     public bool IsShowing
@@ -242,7 +243,7 @@ public class BannerItem
         if (collapsiable)
         {
             adRequest.Extras.Add("collapsible", "bottom");
-            adRequest.Extras.Add("collapsible_request_id", Guid.NewGuid().ToString());
+            //adRequest.Extras.Add("collapsible_request_id", Guid.NewGuid().ToString());
         }
         LoadBanner(0);
         ListerToCacheAdEvent();
@@ -260,9 +261,10 @@ public class BannerItem
         }
         if (numberLoad > NUMBER_RELOAD)
         {
-            Debug.LogError($"Out of reload banner {placementId}");
+            Debug.LogError($"Out of request banner {placementId}");
             isRequest = false;
-            _cacheBannerView?.Destroy();
+            _cacheBannerView?.Destroy(); 
+            wrapper.manager.onBannerFailedToLoad?.Invoke(placementId, _bannerView, error);
             return;
         }
         isRequest = true;
@@ -302,8 +304,9 @@ public class BannerItem
         };
         _cacheBannerView.OnBannerAdLoadFailed += (LoadAdError error) =>
         {
-            Debug.Log($"<color=red>Banner load fail {placementId}: <color=red>" + error.GetMessage());
-            wrapper.manager.onBannerFailedToLoad?.Invoke(placementId, _bannerView, error);
+            //Debug.Log($"<color=red>Banner load fail {placementId}: <color=red>" + error.GetMessage());
+            //wrapper.manager.onBannerFailedToLoad?.Invoke(placementId, _bannerView, error);
+            this.error = error;
             LoadBanner();
         };
     }
@@ -323,6 +326,7 @@ public class BannerItem
             wrapper.manager.onBannerUserClick?.Invoke(placementId, _bannerView);
         });
     }
+
     public static void QueueMainThreadExecution(Action action)
     {
 #if UNITY_ANDROID
