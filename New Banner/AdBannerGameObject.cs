@@ -14,9 +14,11 @@ public class AdBannerGameObject : MonoBehaviour
     public int placementId;
     [ShowIf("showBanner")]
     public AdPosition adPosition;
+    [ShowIf("showBanner")]
     public bool collapsible;
+    [ShowIf("showBanner")]
     public bool adaptiveSize = true;
-    [HideIf("adaptiveSize")]
+    [HideIf("@this.adaptiveSize || !this.showBanner")]
     public Vector2 size;
     private AdSize adSize;
 

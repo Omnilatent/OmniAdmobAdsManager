@@ -65,7 +65,7 @@ public class NativeAdGameObject : MonoBehaviour
         if (nativeAd == null) return;
         instance = this;
         RegisterGameobject(nativeAd);
-        AdMobManager.instance.onNativeLoaded -= ShowAd;
+        //AdMobManager.instance.onNativeLoaded -= ShowAd;
         AdMobManager.instance.onNativeShow?.Invoke((int)placementId, nativeAd);
         gameObject.SetActive(true);
         FillValue(nativeAd);

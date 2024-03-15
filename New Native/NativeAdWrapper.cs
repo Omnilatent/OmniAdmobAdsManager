@@ -35,7 +35,7 @@ public class NativeAdWrapper
     {
         Debug.Log("Native begin load global!");
         globalAd = new NativeAdItem(AdPlacement.Common_Native, this);
-        globalAd.IsRefreshData = false;
+        globalAd.IsRefreshData = true;
         globalAd.RequestAd();
         nativeAdItems.Add(AdPlacement.Common_Native, globalAd);
     }
@@ -100,14 +100,15 @@ public class NativeAdItem
 
         Debug.Log("Get Native ads from cache: " + placementId);
         manager.manager.onNativeLoaded?.Invoke(placementId, NativeAdData, false);
-        if (IsRefreshData && Time.time > nextTimeRefresh && timeRefresh != -1)
-        {
-            Request(0);
-        }
 #endif
     }
 
 
+    async void Reload()
+    {
+        await Task.Delay(1000);
+        Request(0);
+    }
     /// <summary>
     /// 
     /// </summary>
@@ -141,6 +142,10 @@ public class NativeAdItem
             QueueMainThreadExecution(() =>
             {
                 manager.manager.OnNativeImpression?.Invoke(placementId, b);
+                if (Time.time > nextTimeRefresh && timeRefresh != -1)
+                {
+                    Reload();
+                }
             });
         adLoader.OnNativeAdOpening += (a, b) =>
             QueueMainThreadExecution(() =>

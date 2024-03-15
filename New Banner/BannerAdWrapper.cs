@@ -118,8 +118,6 @@ public class BannerAdWrapper
     {
         if (!CheckShowAd(placementId))
         {
-            Debug.Log("<color=red>Ad Banner don't show! </color>" + placementId);
-            Debug.Log($"<color=red>{ keyShowBanner[focus_condition]},{keyShowBanner[obj_condition]},{keyShowBanner[placementId.ToString()]}</color>");
             return;
         }
         foreach (var e in bannerAdItems)
@@ -226,10 +224,7 @@ public class BannerItem
         if (_bannerView != null)
         {
             ShowBanner();
-            if (Time.time < nextTimeRefresh || timeRefresh == -1)
-            {
-                return;
-            }
+            return;
         }
         if (isRequest)
         {
@@ -249,6 +244,12 @@ public class BannerItem
         ListerToCacheAdEvent();
     }
 
+    private async void ReLoadBanner()
+    {
+        await Task.Delay(500);
+        LoadBanner(0);
+    }
+
     private void LoadBanner(int count = -1)
     {
         if (count != -1)
@@ -263,7 +264,7 @@ public class BannerItem
         {
             Debug.LogError($"Out of request banner {placementId}");
             isRequest = false;
-            _cacheBannerView?.Destroy(); 
+            _cacheBannerView?.Destroy();
             wrapper.manager.onBannerFailedToLoad?.Invoke(placementId, _bannerView, error);
             return;
         }
@@ -320,6 +321,12 @@ public class BannerItem
         _bannerView.OnAdImpressionRecorded += () => QueueMainThreadExecution(() =>
         {
             wrapper.manager.onBannerImpression?.Invoke(placementId, _bannerView);
+
+            if (Time.time < nextTimeRefresh || timeRefresh == -1)
+            {
+                ReLoadBanner();
+                return;
+            }
         });
         _bannerView.OnAdClicked += () => QueueMainThreadExecution(() =>
         {
@@ -346,15 +353,13 @@ public class BannerItem
 
     private void ShowBanner()
     {
-        if (_bannerView == null)
+        if (_bannerView == null || _bannerView.IsDestroyed || _bannerView.GetResponseInfo() == null)
         {
-            Debug.LogError("Banner is not show by banner view is null!" + placementId);
             isShow = false;
             RequestAd();
         }
         else
         {
-            Debug.Log("Banner show!" + placementId);
             _bannerView.Show();
             isShow = true;
             wrapper.manager.onBannerShow?.Invoke(placementId, _bannerView);
@@ -364,7 +369,7 @@ public class BannerItem
 
     internal void Destroy()
     {
-        if(_bannerView != null)
+        if (_bannerView != null)
         {
             _bannerView.Destroy();
             _bannerView = null;
