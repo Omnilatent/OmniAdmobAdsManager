@@ -23,14 +23,13 @@ public class BannerAdFocus : MonoBehaviour
 #endif
     }
 
-    private void OnApplicationPause(bool pause)
+    private void OnApplicationFocus(bool focus)
     {
-        if (!pause)
+        if (focus)
         {
             BannerItem.QueueMainThreadExecution(() =>
             {
-                StopAllCoroutines();
-                StartCoroutine(DelayTocallAction(AdMobManager.instance.InstanceBannerAdWrapper.ShowBannerFocus));
+                AdMobManager.instance.InstanceBannerAdWrapper.ShowBannerFocus();
             });
         }
         else
@@ -40,12 +39,6 @@ public class BannerAdFocus : MonoBehaviour
                 AdMobManager.instance.InstanceBannerAdWrapper.HideBannerFocus();
             });
         };
-    }
-
-    IEnumerator DelayTocallAction(Action action)
-    {
-        yield return new WaitForSeconds(1f);
-        action.Invoke();
     }
 }
 
@@ -224,6 +217,11 @@ public class BannerItem
         if (_bannerView != null)
         {
             ShowBanner();
+            if (Time.time < nextTimeRefresh || timeRefresh == -1)
+            {
+                ReLoadBanner();
+                return;
+            }
             return;
         }
         if (isRequest)
@@ -294,7 +292,7 @@ public class BannerItem
         _cacheBannerView.OnBannerAdLoaded += () =>
         {
             isRequest = false;
-            _bannerView?.Destroy();
+            //_bannerView?.Destroy();
             _bannerView = _cacheBannerView;
             ListenToAdEvents();
             wrapper.manager.onBannerLoaded?.Invoke(placementId, _bannerView);
@@ -321,12 +319,6 @@ public class BannerItem
         _bannerView.OnAdImpressionRecorded += () => QueueMainThreadExecution(() =>
         {
             wrapper.manager.onBannerImpression?.Invoke(placementId, _bannerView);
-
-            if (Time.time < nextTimeRefresh || timeRefresh == -1)
-            {
-                ReLoadBanner();
-                return;
-            }
         });
         _bannerView.OnAdClicked += () => QueueMainThreadExecution(() =>
         {
@@ -353,7 +345,7 @@ public class BannerItem
 
     private void ShowBanner()
     {
-        if (_bannerView == null || _bannerView.IsDestroyed || _bannerView.GetResponseInfo() == null)
+        if (_bannerView == null || _bannerView.IsDestroyed)
         {
             isShow = false;
             RequestAd();

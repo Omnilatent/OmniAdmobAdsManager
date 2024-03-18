@@ -171,7 +171,6 @@ public class NativeAdItem
     private void ReloadAds(AdFailedToLoadEventArgs b, int count)
     {
         count++;
-        manager.manager.onNativeFailedToLoad?.Invoke(placementId, null, b.LoadAdError);
         if (count < NUMBER_RELOAD)
         {
             Request(count);
@@ -181,6 +180,7 @@ public class NativeAdItem
             Debug.LogError("Out of request native ad " + placementId);
             count = 0;
             isRequesting = false;
+            manager.manager.onNativeFailedToLoad?.Invoke(placementId, null, b.LoadAdError);
         }
     }
 
