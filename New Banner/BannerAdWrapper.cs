@@ -88,6 +88,7 @@ public class BannerAdWrapper
 
     public void LoadAd(AdPlacement.Type placementId, bool collapsiable, AdPosition position, AdSize adSize)
     {
+        HideAll();
         if (!keyShowBanner.ContainsKey(placementId.ToString()))
         {
             keyShowBanner.Add(placementId.ToString(), true);
