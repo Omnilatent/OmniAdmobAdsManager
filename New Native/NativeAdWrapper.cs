@@ -19,7 +19,6 @@ public class NativeAdWrapper
         this.manager = manager;
         nativeAdItems = new Dictionary<AdPlacement.Type, NativeAdItem>();
         timeReloadAd = 10;
-        GetGlobalData();
         FirebaseRemoteConfigHelper.CheckAndHandleFetchConfig(FetchRMCF);
     }
 
@@ -31,17 +30,21 @@ public class NativeAdWrapper
         }
     }
 
-    private void GetGlobalData()
+    public void GetGlobalData()
     {
-        Debug.Log("Native begin load global!");
-        globalAd = new NativeAdItem(AdPlacement.Common_Native, this);
-        globalAd.IsRefreshData = true;
+        if (!nativeAdItems.ContainsKey(AdPlacement.Common_Native))
+        {
+            Debug.Log("Native begin load global!");
+            globalAd = new NativeAdItem(AdPlacement.Common_Native, this);
+            globalAd.IsRefreshData = true;
+            nativeAdItems.Add(AdPlacement.Common_Native, globalAd);
+        }
         globalAd.RequestAd();
-        nativeAdItems.Add(AdPlacement.Common_Native, globalAd);
     }
 
-    public void LoadNativeAd(AdPlacement.Type placementId)
+    public void LoadNativeAd(AdPlacement.Type placementId, bool forceGlobalAd = true)
     {
+        Debug.Log("LoadNativeAd: " + placementId);
         if (AdsManager.Instance.DoNotShowAds(placementId))
         {
             Debug.LogWarning($"Ad {placementId} was hide by AdsManager!");
@@ -58,7 +61,7 @@ public class NativeAdWrapper
         }
         else
         {
-            globalAd.RequestAd();
+            if (forceGlobalAd) GetGlobalData();
             var native = new NativeAdItem(placementId, this);
             native.RequestAd();
             nativeAdItems.Add(placementId, native);
