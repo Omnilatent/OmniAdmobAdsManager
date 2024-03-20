@@ -44,17 +44,22 @@ namespace Omnilatent.AdMob
 
             var adObject = GetCachedBannerObject(placementType);
 
-            if (adObject != null && adObject.State == AdObjectState.Closed)
+            if (adObject != null)
             {
-                onAdLoaded?.Invoke(true, adObject);
-                adObject.BannerView.Show();
-                adObject.State = AdObjectState.Showing;
-                m_Manager.onBannerShow?.Invoke(adObject.AdPlacementType, adObject.BannerView);
+                if (adObject.State == AdObjectState.Closed)
+                {
+                    onAdLoaded?.Invoke(true, adObject);
+                    adObject.BannerView.Show();
+                    adObject.State = AdObjectState.Showing;
+                    m_Manager.onBannerShow?.Invoke(adObject.AdPlacementType, adObject.BannerView);
+                }
+                else if (adObject.State == AdObjectState.None)
+                {
+                    RequestBanner(placementType, bannerTransform, onAdLoaded);
+                }
             }
             else
             {
-                //.Log(string.Format("destroying current banner({0} {1}), showing new one", AdsManager.bannerId, currentBannerSize));
-                // DestroyBanner();
                 RequestBanner(placementType, bannerTransform, onAdLoaded);
             }
         }
@@ -63,7 +68,6 @@ namespace Omnilatent.AdMob
             BannerLoadDelegate onAdLoaded = null)
         {
             string placementId = CustomMediation.GetAdmobID(placementType);
-            var adObject = GetCachedBannerObject(placementType);
             AdMobManager.bannerId = placementId;
             // Create a smart banner at the bottom of the screen.
             GoogleMobileAds.Api.AdPosition adPosition = GoogleMobileAds.Api.AdPosition.Bottom;
@@ -75,7 +79,8 @@ namespace Omnilatent.AdMob
             AdSize adSize = bannerTransform.adSizeData as AdSize;
             if (adSize == null) { adSize = AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth); }
 
-            adObject = new AdmobBannerAdObject(placementType, onAdLoaded);
+            AdmobBannerAdObject adObject = new AdmobBannerAdObject(placementType, onAdLoaded);
+            AdsManager.GetBannerManager().SetCachedBannerObject(placementType, adObject);
             adObject.BannerView = new BannerView(placementId, adSize, adPosition);
 
             // Load a banner ad.
