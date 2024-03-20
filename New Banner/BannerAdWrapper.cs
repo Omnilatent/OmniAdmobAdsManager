@@ -1,3 +1,6 @@
+using DG.Tweening;
+using DG.Tweening.Core;
+using DG.Tweening.Plugins.Options;
 using GoogleMobileAds.Api;
 using System;
 using System.Collections;
@@ -171,7 +174,7 @@ public class BannerAdWrapper
 [System.Serializable]
 public class BannerItem
 {
-    private const int NUMBER_RELOAD = 10;
+    private const int NUMBER_RELOAD = 3;
     private const int MILLISECONDS_DELAY_RELOAD = 2000;
     private BannerView _bannerView;
     private BannerView _cacheBannerView;
@@ -186,6 +189,8 @@ public class BannerItem
     private int numberLoad = 0;
     private float nextTimeRefresh = 0;
     private LoadAdError error;
+    private TweenerCore<int, int, NoOptions> twwen;
+
     private float timeRefresh => wrapper.timeReloadAd;
 
     public bool IsShowing
@@ -218,9 +223,12 @@ public class BannerItem
         if (_bannerView != null)
         {
             ShowBanner();
-            if (Time.time < nextTimeRefresh || timeRefresh == -1)
+            if (Time.time < nextTimeRefresh || timeRefresh == -1 && !isRequest)
             {
-                ReLoadBanner();
+                Debug.Log("Reload Banner : " + placementId);
+                nextTimeRefresh = Time.time + timeRefresh;
+                twwen?.Kill();
+                twwen = DOTween.To(() => 0, (value) => { }, 1, 0.5f).OnComplete(() => ReLoadBanner());
                 return;
             }
             return;
@@ -243,9 +251,8 @@ public class BannerItem
         ListerToCacheAdEvent();
     }
 
-    private async void ReLoadBanner()
+    private void ReLoadBanner()
     {
-        await Task.Delay(500);
         LoadBanner(0);
     }
 
@@ -293,7 +300,7 @@ public class BannerItem
         _cacheBannerView.OnBannerAdLoaded += () =>
         {
             isRequest = false;
-            //_bannerView?.Destroy();
+            _bannerView?.Destroy();
             _bannerView = _cacheBannerView;
             ListenToAdEvents();
             wrapper.manager.onBannerLoaded?.Invoke(placementId, _bannerView);
@@ -346,7 +353,7 @@ public class BannerItem
 
     private void ShowBanner()
     {
-        if (_bannerView == null || _bannerView.IsDestroyed)
+        if (_bannerView == null)
         {
             isShow = false;
             RequestAd();
