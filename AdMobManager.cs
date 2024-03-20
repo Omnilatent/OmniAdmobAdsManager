@@ -246,6 +246,11 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     {
         bannerWrapper.DestroyBanner();
     }
+    
+    public void DestroyBanner(AdPlacement.Type placementType)
+    {
+        bannerWrapper.DestroyBanner(placementType);
+    }
 
     #endregion
 
