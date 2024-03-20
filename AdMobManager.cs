@@ -220,26 +220,22 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         }
     }
 
-    [Obsolete("Use AdModManager.instance.InstanceBannerAdWrapper", true)]
     public void ShowBanner(AdPlacement.Type placementId, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
         ShowBanner(placementId, Omnilatent.AdsMediation.BannerTransform.defaultValue, onAdLoaded);
     }
 
-    [Obsolete("Use AdModManager.instance.InstanceBannerAdWrapper", true)]
     public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform,
         AdsManager.InterstitialDelegate onAdLoaded = null)
     {
         bannerWrapper.ShowBanner(placementType, bannerTransform, onAdLoaded);
     }
 
-    [Obsolete("Use AdModManager.instance.InstanceBannerAdWrapper", true)]
     public void HideBanner()
     {
         bannerWrapper.HideBanner();
     }
 
-    [Obsolete("Use AdModManager.instance.InstanceBannerAdWrapper", true)]
     public void DestroyBanner()
     {
         bannerWrapper.DestroyBanner();
