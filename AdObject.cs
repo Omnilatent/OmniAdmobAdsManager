@@ -18,7 +18,7 @@ namespace Omnilatent.AdMob
         {
         }
 
-        public AdmobBannerAdObject(AdPlacement.Type adPlacementType, AdsManager.InterstitialDelegate onAdLoaded) : base(adPlacementType, onAdLoaded)
+        public AdmobBannerAdObject(AdPlacement.Type adPlacementType, BannerLoadDelegate onAdLoaded) : base(adPlacementType, onAdLoaded)
         {
         }
 

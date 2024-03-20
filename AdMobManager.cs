@@ -225,10 +225,21 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     {
         bannerWrapper.ShowBanner(placementType, bannerTransform, onAdLoaded);
     }
+    
+    public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform,
+        BannerLoadDelegate onAdLoaded = null)
+    {
+        bannerWrapper.ShowBanner(placementType, bannerTransform, onAdLoaded);
+    }
 
     public void HideBanner()
     {
         bannerWrapper.HideBanner();
+    }
+
+    public void HideBanner(AdPlacement.Type placementType)
+    {
+        bannerWrapper.HideBanner(placementType);
     }
 
     public void DestroyBanner()

@@ -31,12 +31,32 @@ namespace Omnilatent.AdMob
             {
                 //.Log(string.Format("destroying current banner({0} {1}), showing new one", AdsManager.bannerId, currentBannerSize));
                 DestroyBanner();
+                RequestBanner(placementType, bannerTransform, (success, adObject) => { onAdLoaded?.Invoke(success); });
+            }
+        }
+        
+        public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform, BannerLoadDelegate onAdLoaded = null)
+        {
+            string id = CustomMediation.GetAdmobID(placementType);
+            //ShowBanner(id, AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth), adPosition, 0f, onAdLoaded);
+
+            if (currentBannerAd != null && currentBannerAd.AdPlacementType == placementType)
+            {
+                onAdLoaded?.Invoke(true, currentBannerAd);
+                currentBannerAd.BannerView.Show();
+                currentBannerAd.State = AdObjectState.Showing;
+                m_Manager.onBannerShow?.Invoke(currentBannerAd.AdPlacementType, currentBannerAd.BannerView);
+            }
+            else
+            {
+                //.Log(string.Format("destroying current banner({0} {1}), showing new one", AdsManager.bannerId, currentBannerSize));
+                DestroyBanner();
                 RequestBanner(placementType, bannerTransform, onAdLoaded);
             }
         }
 
         public void RequestBanner(AdPlacement.Type placementType, BannerTransform bannerTransform,
-            AdsManager.InterstitialDelegate onAdLoaded = null)
+            BannerLoadDelegate onAdLoaded = null)
         {
             string placementId = CustomMediation.GetAdmobID(placementType);
             if (this.currentBannerAd == null)
@@ -85,7 +105,7 @@ namespace Omnilatent.AdMob
             AdMobManager.QueueMainThreadExecution(() =>
             {
                 m_Manager.ShowError(args);
-                GetCurrentBannerAdObject().onAdLoaded?.Invoke(false);
+                GetCurrentBannerAdObject().onAdLoaded?.Invoke(false, GetCurrentBannerAdObject());
                 m_Manager.onBannerFailedToLoad?.Invoke(GetCurrentBannerAdObject().AdPlacementType, currentBannerAd.BannerView, args);
                 DestroyBanner();
             });
@@ -102,7 +122,7 @@ namespace Omnilatent.AdMob
                     m_Manager.onBannerShow?.Invoke(currentBannerAd.AdPlacementType, currentBannerAd.BannerView);
                 }
 
-                GetCurrentBannerAdObject().onAdLoaded?.Invoke(true);
+                GetCurrentBannerAdObject().onAdLoaded?.Invoke(true, GetCurrentBannerAdObject());
                 m_Manager.onBannerLoaded?.Invoke(currentBannerAd.AdPlacementType, currentBannerAd.BannerView);
             });
         }
@@ -130,6 +150,16 @@ namespace Omnilatent.AdMob
         }
 
         public void HideBanner()
+        {
+            if (currentBannerAd != null && currentBannerAd.BannerView != null)
+            {
+                currentBannerAd.BannerView.Hide();
+                currentBannerAd.State = AdObjectState.Closed;
+                m_Manager.onBannerHide?.Invoke(currentBannerAd.AdPlacementType, currentBannerAd.BannerView);
+            }
+        }
+        
+        public void HideBanner(AdPlacement.Type placementType)
         {
             if (currentBannerAd != null && currentBannerAd.BannerView != null)
             {
