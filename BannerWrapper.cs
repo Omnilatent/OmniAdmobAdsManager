@@ -32,11 +32,14 @@ namespace Omnilatent.AdMob
             {
                 //.Log(string.Format("destroying current banner({0} {1}), showing new one", AdsManager.bannerId, currentBannerSize));
                 DestroyBanner();
-                RequestBanner(placementType, bannerTransform, (success, adObject) => { onAdLoaded?.Invoke(success); });
+                AdmobBannerAdObject newAdObject = new AdmobBannerAdObject(placementType, null);
+                AdsManager.GetBannerManager().SetCachedBannerObject(placementType, newAdObject);
+                BannerAdObject bannerAdObject = newAdObject;
+                RequestBanner(placementType, bannerTransform, ref bannerAdObject, (success, adObject) => { onAdLoaded?.Invoke(success); });
             }
         }
 
-        public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform,
+        public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform, ref BannerAdObject bannerAdObject,
             BannerLoadDelegate onAdLoaded = null)
         {
             string id = CustomMediation.GetAdmobID(placementType);
@@ -55,16 +58,16 @@ namespace Omnilatent.AdMob
                 }
                 else if (adObject.State == AdObjectState.None)
                 {
-                    RequestBanner(placementType, bannerTransform, onAdLoaded);
+                    RequestBanner(placementType, bannerTransform, ref bannerAdObject, onAdLoaded);
                 }
             }
             else
             {
-                RequestBanner(placementType, bannerTransform, onAdLoaded);
+                RequestBanner(placementType, bannerTransform, ref bannerAdObject, onAdLoaded);
             }
         }
 
-        public void RequestBanner(AdPlacement.Type placementType, BannerTransform bannerTransform,
+        public void RequestBanner(AdPlacement.Type placementType, BannerTransform bannerTransform, ref BannerAdObject bannerAdObject,
             BannerLoadDelegate onAdLoaded = null)
         {
             string placementId = CustomMediation.GetAdmobID(placementType);
@@ -80,6 +83,7 @@ namespace Omnilatent.AdMob
             if (adSize == null) { adSize = AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth); }
 
             AdmobBannerAdObject adObject = new AdmobBannerAdObject(placementType, onAdLoaded);
+            bannerAdObject = adObject;
             AdsManager.GetBannerManager().SetCachedBannerObject(placementType, adObject);
             adObject.BannerView = new BannerView(placementId, adSize, adPosition);
 

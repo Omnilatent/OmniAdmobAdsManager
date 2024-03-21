@@ -215,9 +215,14 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         }
     }
 
+    public void RequestBanner(AdPlacement.Type placementType, BannerTransform bannerTransform, ref BannerAdObject bannerAdObject, BannerLoadDelegate onAdLoaded = null)
+    {
+        bannerWrapper.RequestBanner(placementType, bannerTransform, ref bannerAdObject, onAdLoaded);
+    }
+
     public void ShowBanner(AdPlacement.Type placementId, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
-        ShowBanner(placementId, Omnilatent.AdsMediation.BannerTransform.defaultValue, onAdLoaded);
+        bannerWrapper.ShowBanner(placementId, Omnilatent.AdsMediation.BannerTransform.defaultValue, onAdLoaded);
     }
 
     public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform,
@@ -226,10 +231,10 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         bannerWrapper.ShowBanner(placementType, bannerTransform, onAdLoaded);
     }
     
-    public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform,
+    public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform, ref BannerAdObject bannerAdObject,
         BannerLoadDelegate onAdLoaded = null)
     {
-        bannerWrapper.ShowBanner(placementType, bannerTransform, onAdLoaded);
+        bannerWrapper.ShowBanner(placementType, bannerTransform, ref bannerAdObject, onAdLoaded);
     }
 
     public void HideBanner()
