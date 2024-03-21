@@ -39,17 +39,19 @@ namespace Omnilatent.AdMob
             }
         }
 
-        public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform, ref BannerAdObject bannerAdObject,
+        public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform,
+            ref BannerAdObject bannerAdObject,
             BannerLoadDelegate onAdLoaded = null)
         {
             string id = CustomMediation.GetAdmobID(placementType);
             //ShowBanner(id, AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth), adPosition, 0f, onAdLoaded);
 
-            var adObject = GetCachedBannerObject(placementType);
+            // var bannerAdObject = GetCachedBannerObject(placementType);
+            AdmobBannerAdObject adObject = bannerAdObject as AdmobBannerAdObject;
 
             if (adObject != null)
             {
-                if (adObject.State == AdObjectState.Closed)
+                if (adObject.CanShow)
                 {
                     onAdLoaded?.Invoke(true, adObject);
                     adObject.BannerView.Show();
@@ -58,12 +60,27 @@ namespace Omnilatent.AdMob
                 }
                 else if (adObject.State == AdObjectState.None)
                 {
-                    RequestBanner(placementType, bannerTransform, ref bannerAdObject, onAdLoaded);
+                    RequestBannerThenShow(ref bannerAdObject);
                 }
             }
             else
             {
-                RequestBanner(placementType, bannerTransform, ref bannerAdObject, onAdLoaded);
+                RequestBannerThenShow(ref bannerAdObject);
+            }
+
+            void RequestBannerThenShow(ref BannerAdObject refBannerAdObject)
+            {
+                RequestBanner(placementType, bannerTransform, ref refBannerAdObject, (success, loadedAdObject) =>
+                {
+                    if (this.currentBannerAd != null && currentBannerAd.State != AdObjectState.Closed)
+                    {
+                        currentBannerAd.BannerView.Show();
+                        currentBannerAd.State = AdObjectState.Showing;
+                        m_Manager.onBannerShow?.Invoke(currentBannerAd.AdPlacementType, currentBannerAd.BannerView);
+                    }
+
+                    onAdLoaded?.Invoke(success, loadedAdObject);
+                });
             }
         }
 
@@ -84,7 +101,7 @@ namespace Omnilatent.AdMob
 
             AdmobBannerAdObject adObject = new AdmobBannerAdObject(placementType, onAdLoaded);
             bannerAdObject = adObject;
-            AdsManager.GetBannerManager().SetCachedBannerObject(placementType, adObject);
+            // AdsManager.GetBannerManager().SetCachedBannerObject(placementType, adObject);
             adObject.BannerView = new BannerView(placementId, adSize, adPosition);
 
             // Load a banner ad.
@@ -127,12 +144,12 @@ namespace Omnilatent.AdMob
         {
             AdMobManager.QueueMainThreadExecution(() =>
             {
-                if (this.currentBannerAd != null && currentBannerAd.State != AdObjectState.Closed)
+                /*if (this.currentBannerAd != null && currentBannerAd.State != AdObjectState.Closed)
                 {
                     currentBannerAd.BannerView.Show();
                     currentBannerAd.State = AdObjectState.Showing;
                     m_Manager.onBannerShow?.Invoke(currentBannerAd.AdPlacementType, currentBannerAd.BannerView);
-                }
+                }*/
 
                 GetCurrentBannerAdObject().onAdLoaded?.Invoke(true, GetCurrentBannerAdObject());
                 m_Manager.onBannerLoaded?.Invoke(currentBannerAd.AdPlacementType, currentBannerAd.BannerView);
@@ -180,7 +197,9 @@ namespace Omnilatent.AdMob
 
         private static AdmobBannerAdObject GetCachedBannerObject(AdPlacement.Type placementType)
         {
-            AdmobBannerAdObject adObject = AdsManager.GetBannerManager().GetCachedBannerObject(placementType) as AdmobBannerAdObject;
+            AdmobBannerAdObject adObject =
+                AdsManager.GetBannerManager().GetCachedBannerObject(placementType, CustomMediation.AD_NETWORK.GoogleAdmob) as
+                    AdmobBannerAdObject;
             return adObject;
         }
 
