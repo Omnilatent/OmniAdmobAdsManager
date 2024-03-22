@@ -25,5 +25,14 @@ namespace Omnilatent.AdMob
         }
 
         public BannerView BannerView { get => bannerView; set => bannerView = value; }
+        
+        public override bool CanShow
+        {
+            get
+            {
+                if (BannerView == null || BannerView.IsDestroyed) { return false;}
+                return base.CanShow;
+            }
+        }
     }
 }
