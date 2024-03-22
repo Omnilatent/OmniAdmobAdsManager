@@ -1,3 +1,15 @@
+## 1.10.0
+Dependency changes: Requires AdsManager 2.12.0+.
+
+News:
+- Implement RequestBanner(AdPlacement.Type, BannerTransform, ref BannerAdObject, BannerLoadDelegate);
+- Update ShowBanner to handle `ref BannerAdObject` parameter.
+
+Changes:
+- Remove unused AdObject.
+- Separate code show banner from on ad loaded event.
+- Remove code that use current banner ad and change it to get cached banner ad object.
+
 ## 1.9.0
 Breaking changes:
 - Callback functions' parameter changed: Ad Object will be passed as 2nd parameter.
