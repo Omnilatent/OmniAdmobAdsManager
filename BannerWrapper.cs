@@ -108,8 +108,14 @@ namespace Omnilatent.AdMob
             AdSize adSize = bannerTransform.adSizeData as AdSize;
             if (adSize == null) { adSize = AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth); }
 
-            AdmobBannerAdObject adObject = new AdmobBannerAdObject(placementType, onAdLoaded);
-            bannerAdObject = adObject;
+            AdmobBannerAdObject adObject = bannerAdObject as AdmobBannerAdObject;
+            if (adObject == null)
+            {
+                // bannerAdObject is not of type AdmobBannerAdObject, creating new AdmobBannerAdObject and overwrite original bannerAdObject
+                adObject = new AdmobBannerAdObject(placementType, onAdLoaded);
+                bannerAdObject = adObject;
+            }
+
             // AdsManager.GetBannerManager().SetCachedBannerObject(placementType, adObject);
             adObject.BannerView = new BannerView(placementId, adSize, adPosition);
 
