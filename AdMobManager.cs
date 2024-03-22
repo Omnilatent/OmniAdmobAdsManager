@@ -222,7 +222,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
 
     public void ShowBanner(AdPlacement.Type placementId, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
-        bannerWrapper.ShowBanner(placementId, Omnilatent.AdsMediation.BannerTransform.defaultValue, onAdLoaded);
+        ShowBanner(placementId, Omnilatent.AdsMediation.BannerTransform.defaultValue, onAdLoaded);
     }
 
     public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform,
@@ -237,9 +237,11 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         bannerWrapper.ShowBanner(placementType, bannerTransform, ref bannerAdObject, onAdLoaded);
     }
 
+    [Obsolete]
     public void HideBanner()
     {
-        bannerWrapper.HideBanner();
+        Debug.LogError("This method has been deprecated. Update AdsManager to version 2.12 and use HideBanner(AdPlacement.Type) instead");
+        // bannerWrapper.HideBanner();
     }
 
     public void HideBanner(AdPlacement.Type placementType)
@@ -247,9 +249,11 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         bannerWrapper.HideBanner(placementType);
     }
 
+    [Obsolete]
     public void DestroyBanner()
     {
-        bannerWrapper.DestroyBanner();
+        Debug.LogError("This method has been deprecated. Update AdsManager to version 2.12 and use DestroyBanner(AdPlacement.Type) instead");
+        // bannerWrapper.DestroyBanner();
     }
     
     public void DestroyBanner(AdPlacement.Type placementType)
