@@ -25,7 +25,7 @@ namespace Omnilatent.AdMob
             {
                 onAdLoaded?.Invoke(true);
                 currentBannerAd.BannerView.Show();
-                currentBannerAd.State = AdObjectState.Showing;
+                // currentBannerAd.State = AdObjectState.Showing;
                 m_Manager.onBannerShow?.Invoke(currentBannerAd.AdPlacementType, currentBannerAd.BannerView);
             }
             else
@@ -55,7 +55,7 @@ namespace Omnilatent.AdMob
                 {
                     onAdLoaded?.Invoke(true, adObject);
                     adObject.BannerView.Show();
-                    adObject.State = AdObjectState.Showing;
+                    // adObject.State = AdObjectState.Showing;
                     m_Manager.onBannerShow?.Invoke(adObject.AdPlacementType, adObject.BannerView);
                 }
                 else if (adObject.State == AdObjectState.None)
@@ -70,13 +70,14 @@ namespace Omnilatent.AdMob
 
             void RequestBannerThenShow(ref BannerAdObject refBannerAdObject)
             {
+                var admobBannerObj = refBannerAdObject as AdmobBannerAdObject;
                 RequestBanner(placementType, bannerTransform, ref refBannerAdObject, (success, loadedAdObject) =>
                 {
-                    if (this.currentBannerAd != null && currentBannerAd.State != AdObjectState.Closed)
+                    if (admobBannerObj != null && admobBannerObj.State != AdObjectState.Closed)
                     {
-                        currentBannerAd.BannerView.Show();
-                        currentBannerAd.State = AdObjectState.Showing;
-                        m_Manager.onBannerShow?.Invoke(currentBannerAd.AdPlacementType, currentBannerAd.BannerView);
+                        admobBannerObj.BannerView.Show();
+                        // admobBannerObj.State = AdObjectState.Showing;
+                        m_Manager.onBannerShow?.Invoke(admobBannerObj.AdPlacementType, admobBannerObj.BannerView);
                     }
 
                     onAdLoaded?.Invoke(success, loadedAdObject);
@@ -115,7 +116,7 @@ namespace Omnilatent.AdMob
                     m_Manager.onBannerUserClick?.Invoke(GetCurrentBannerAdObject().AdPlacementType, adObject.BannerView);
                 });
             };
-            adObject.State = AdObjectState.Loading;
+            // adObject.State = AdObjectState.Loading;
 
             var adRequest = new AdRequest();
             if (bannerTransform.Collapsible)
@@ -187,7 +188,7 @@ namespace Omnilatent.AdMob
                 if (adObject.BannerView != null)
                 {
                     adObject.BannerView.Destroy();
-                    adObject.State = AdObjectState.None;
+                    // adObject.State = AdObjectState.None;
                 }
 
                 adObject.BannerView = null;
@@ -208,7 +209,7 @@ namespace Omnilatent.AdMob
             if (currentBannerAd != null && currentBannerAd.BannerView != null)
             {
                 currentBannerAd.BannerView.Hide();
-                currentBannerAd.State = AdObjectState.Closed;
+                // currentBannerAd.State = AdObjectState.Closed;
                 m_Manager.onBannerHide?.Invoke(currentBannerAd.AdPlacementType, currentBannerAd.BannerView);
             }
         }
@@ -220,7 +221,7 @@ namespace Omnilatent.AdMob
             if (adObject != null && adObject.BannerView != null)
             {
                 adObject.BannerView.Hide();
-                adObject.State = AdObjectState.Closed;
+                // adObject.State = AdObjectState.Closed;
                 m_Manager.onBannerHide?.Invoke(adObject.AdPlacementType, adObject.BannerView);
             }
         }
