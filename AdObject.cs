@@ -5,10 +5,10 @@ using System.Collections.Generic;
 
 namespace Omnilatent.AdMob
 {
-    public class AdObject
+    /*public class AdObject
     {
         public AdPlacement.Type placementType;
-    }
+    }*/
 
     public class AdmobBannerAdObject : BannerAdObject
     {

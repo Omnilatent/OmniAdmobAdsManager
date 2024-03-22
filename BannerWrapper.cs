@@ -66,7 +66,7 @@ namespace Omnilatent.AdMob
                     // adObject.State = AdObjectState.Showing;
                     m_Manager.onBannerShow?.Invoke(adObject.AdPlacementType, adObject.BannerView);
                 }
-                else if (adObject.State != AdObjectState.Loading && adObject.State != AdObjectState.Showing)
+                else if (AdsMediation.AdObject.NeedReload(adObject.State))
                 {
                     RequestBannerThenShow(ref bannerAdObject);
                 }
