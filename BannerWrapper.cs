@@ -115,6 +115,10 @@ namespace Omnilatent.AdMob
                 adObject = new AdmobBannerAdObject(placementType, onAdLoaded);
                 bannerAdObject = adObject;
             }
+            else
+            {
+                adObject.onAdLoaded = onAdLoaded;
+            }
 
             // AdsManager.GetBannerManager().SetCachedBannerObject(placementType, adObject);
             adObject.BannerView = new BannerView(placementId, adSize, adPosition);
