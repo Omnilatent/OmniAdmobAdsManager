@@ -136,7 +136,7 @@ public class BannerAdWrapper
         }
     }
 
-    private void DestroyAll()
+    public void DestroyAll()
     {
         foreach (var e in bannerAdItems)
         {
@@ -351,6 +351,16 @@ public class BannerItem
         wrapper.manager.onBannerHide?.Invoke(placementId, _bannerView);
     }
 
+    public void DestroyBanner()
+    {
+        if(_bannerView != null)
+        {
+            _bannerView.Destroy();
+            _bannerView = null;
+            isShow = false;
+        }
+    }
+
     private void ShowBanner()
     {
         if (_bannerView == null)
@@ -373,7 +383,7 @@ public class BannerItem
         {
             _bannerView.Destroy();
             _bannerView = null;
-            IsShowing = false;
+            isShow = false;
         }
     }
 }
