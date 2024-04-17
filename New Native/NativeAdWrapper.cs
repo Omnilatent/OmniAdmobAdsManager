@@ -67,6 +67,17 @@ public class NativeAdWrapper
             nativeAdItems.Add(placementId, native);
         }
     }
+
+    public void DisableAds()
+    {
+#if OMNILATENT_NATIVE_ADS
+        foreach(var ad in nativeAdItems.Values)
+        {
+            ad.DisableAds();
+        }
+        AdMobManager.instance.onNativeForceClose.Invoke();
+#endif
+    }
 }
 
 [System.Serializable]
@@ -83,6 +94,7 @@ public class NativeAdItem
     private bool isRequesting = false;
     private float nextTimeRefresh = 0;
     private const int NUMBER_RELOAD = 3;
+    private bool removeAds;
 
     private float timeRefresh => manager.timeReloadAd;
 
@@ -128,6 +140,10 @@ public class NativeAdItem
         adLoader.OnNativeAdLoaded += (a, b) =>
             QueueMainThreadExecution(() =>
             {
+                if (removeAds)
+                {
+                    return;
+                }
                 isRequesting = false;
                 OnNativeAdLoaded(a, b);
             });
@@ -197,6 +213,11 @@ public class NativeAdItem
             manager.manager.onNativePaid.Invoke(placementId, NativeAdData, eventData.AdValue);
         };
 #endif
+    }
+
+    public void DisableAds()
+    {
+        removeAds = true;
     }
 
 #if OMNILATENT_NATIVE_ADS

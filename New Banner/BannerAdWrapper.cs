@@ -75,6 +75,15 @@ public class BannerAdWrapper
         FirebaseRemoteConfigHelper.CheckAndHandleFetchConfig(FetchRMCF);
     }
 
+    public void DisableAds()
+    {
+        foreach(var item in bannerAdItems.Values)
+        {
+            item.SetRemoveAds();
+            item.DestroyBanner();
+        }
+    }
+
     private void InitObject()
     {
         var obj = new GameObject("Banner Ad Focus");
@@ -190,6 +199,7 @@ public class BannerItem
     private float nextTimeRefresh = 0;
     private LoadAdError error;
     private TweenerCore<int, int, NoOptions> twwen;
+    public bool removeAds;
 
     private float timeRefresh => wrapper.timeReloadAd;
 
@@ -299,6 +309,11 @@ public class BannerItem
     {
         _cacheBannerView.OnBannerAdLoaded += () =>
         {
+            if (removeAds)
+            {
+                _cacheBannerView.Destroy();
+                return;
+            }
             isRequest = false;
             _bannerView?.Destroy();
             _bannerView = _cacheBannerView;
@@ -375,6 +390,11 @@ public class BannerItem
             wrapper.manager.onBannerShow?.Invoke(placementId, _bannerView);
         }
 
+    }
+
+    public void SetRemoveAds()
+    {
+        removeAds = true;
     }
 
     internal void Destroy()

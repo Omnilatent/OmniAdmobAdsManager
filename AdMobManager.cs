@@ -286,6 +286,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public Action<AdPlacement.Type, NativeAd, bool> onNativeLoaded;
     public Action<AdPlacement.Type, NativeAd> onNativeShow;
     public Action<AdPlacement.Type> onNativeClosed;
+    public Action onNativeForceClose;
     public Action<AdPlacement.Type, NativeAd> onNativeUserClick;
     public Action<AdPlacement.Type> onNativeRequested;
     public Action<AdPlacement.Type, EventArgs> OnNativeImpression;

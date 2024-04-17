@@ -36,8 +36,13 @@ public class NativeAdGameObject : MonoBehaviour
         return;
 #endif
         AdMobManager.instance.onNativeLoaded += ShowAd;
+        AdMobManager.instance.onNativeForceClose += DisableAds;;
         gameObject.SetActive(false);
         AdMobManager.instance.InstanceNativeAdWrapper.LoadNativeAd((int)_placement);
+    }
+
+    private void DisableAds(){
+        ToggleShowNative(false);
     }
 
     private void ShowAdsFake()
@@ -175,6 +180,7 @@ public class NativeAdGameObject : MonoBehaviour
     private void OnDestroy()
     {
         AdMobManager.instance.onNativeLoaded -= ShowAd;
+        AdMobManager.instance.onNativeForceClose -= DisableAds;;
     }
 
     public void ToggleShowNative(bool show)
