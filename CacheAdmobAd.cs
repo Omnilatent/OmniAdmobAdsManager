@@ -255,9 +255,9 @@ namespace Omnilatent.AdMob
             CachedAdContainer cacheContainer = new CachedAdContainer(placementType, newAd, typeof(AppOpenAd));
             adQueue.Add(cacheContainer);
 
-            AdRequest request = new AdRequest.Builder().Build();
+            AdRequest request = new AdRequest();
             // Load an app open ad for portrait orientation
-            AppOpenAd.Load(id, Screen.orientation, request, (newAppOpenAd, error) =>
+            AppOpenAd.Load(id, request, (newAppOpenAd, error) =>
             {
                 AdMobManager.QueueMainThreadExecution(() =>
                 {

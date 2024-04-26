@@ -12,7 +12,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public void RequestInterstitialRewardedNoShow(AdPlacement.Type placementType, RewardDelegate onFinish = null)
     {
         // Create an empty ad request.
-        AdRequest request = new AdRequest.Builder().Build();
+        AdRequest request = new AdRequest();
         // Load the rewarded ad with the request.
         string id = CustomMediation.GetAdmobID(placementType);
         if (rewardedInterstitialAd == null)
@@ -43,7 +43,7 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     public void RequestInterstitialRewardedAndShow(AdPlacement.Type placementType, RewardDelegate onFinish = null)
     {
         // Create an empty ad request.
-        AdRequest request = new AdRequest.Builder().Build();
+        AdRequest request = new AdRequest();
         // Load the rewarded ad with the request.
         string id = CustomMediation.GetAdmobID(placementType);
         RewardedInterstitialAd.Load(id, request, (RewardedInterstitialAd ad, LoadAdError error) =>
