@@ -215,6 +215,11 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
         }
     }
 
+    public void RequestBanner(AdPlacement.Type placementType, BannerTransform bannerTransform, ref BannerAdObject bannerAdObject, BannerLoadDelegate onAdLoaded = null)
+    {
+        bannerWrapper.RequestBanner(placementType, bannerTransform, ref bannerAdObject, onAdLoaded);
+    }
+
     public void ShowBanner(AdPlacement.Type placementId, AdsManager.InterstitialDelegate onAdLoaded = null)
     {
         ShowBanner(placementId, Omnilatent.AdsMediation.BannerTransform.defaultValue, onAdLoaded);
@@ -225,15 +230,35 @@ public partial class AdMobManager : MonoBehaviour, IAdsNetworkHelper
     {
         bannerWrapper.ShowBanner(placementType, bannerTransform, onAdLoaded);
     }
-
-    public void HideBanner()
+    
+    public void ShowBanner(AdPlacement.Type placementType, Omnilatent.AdsMediation.BannerTransform bannerTransform, ref BannerAdObject bannerAdObject,
+        BannerLoadDelegate onAdLoaded = null)
     {
-        bannerWrapper.HideBanner();
+        bannerWrapper.ShowBanner(placementType, bannerTransform, ref bannerAdObject, onAdLoaded);
     }
 
+    [Obsolete]
+    public void HideBanner()
+    {
+        Debug.LogError("This method has been deprecated. Update AdsManager to version 2.12 and use HideBanner(AdPlacement.Type) instead");
+        // bannerWrapper.HideBanner();
+    }
+
+    public void HideBanner(AdPlacement.Type placementType)
+    {
+        bannerWrapper.HideBanner(placementType);
+    }
+
+    [Obsolete]
     public void DestroyBanner()
     {
-        bannerWrapper.DestroyBanner();
+        Debug.LogError("This method has been deprecated. Update AdsManager to version 2.12 and use DestroyBanner(AdPlacement.Type) instead");
+        // bannerWrapper.DestroyBanner();
+    }
+    
+    public void DestroyBanner(AdPlacement.Type placementType)
+    {
+        bannerWrapper.DestroyBanner(placementType);
     }
 
     #endregion
