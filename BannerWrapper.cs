@@ -141,6 +141,7 @@ namespace Omnilatent.AdMob
             {
                 string positionStr = adPosition == GoogleMobileAds.Api.AdPosition.Top ? "top" : "bottom";
                 adRequest.Extras.Add("collapsible", positionStr);
+                adRequest.Extras.Add("collapsible_request_id", Guid.NewGuid().ToString());
             }
 
             adObject.BannerView.LoadAd(adRequest);
