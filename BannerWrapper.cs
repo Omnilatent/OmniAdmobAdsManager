@@ -121,7 +121,27 @@ namespace Omnilatent.AdMob
             }
 
             // AdsManager.GetBannerManager().SetCachedBannerObject(placementType, adObject);
-            adObject.BannerView = new BannerView(placementId, adSize, adPosition);
+            //adObject.BannerView = new BannerView(placementId, adSize, adPosition);
+#if UNITY_IOS
+            if (adPosition == GoogleMobileAds.Api.AdPosition.TopRight)
+            {
+                int xScreenvalue = Mathf.RoundToInt(MobileAds.Utils.GetDeviceSafeWidth() - adSize.Width - 20);
+                Debug.Log(Screen.width);
+                Debug.Log(MobileAds.Utils.GetDeviceScale());
+                Debug.Log(MobileAds.Utils.GetDeviceSafeWidth());
+                Debug.Log(adSize.Width);
+                adObject.BannerView = new BannerView(placementId, adSize, xScreenvalue, 0);
+            }
+            else
+            {
+                adObject.BannerView = new BannerView(placementId, adSize, adPosition);
+            }
+            
+#else
+
+            adObject.BannerView = new BannerView(placementId, adSize,adPosition);
+#endif
+
 
             // Load a banner ad.
             adObject.BannerView.OnBannerAdLoadFailed += error => OnBannerAdsFailedToLoad(adObject, error);
