@@ -28,29 +28,38 @@ public class AdBannerGameObject : MonoBehaviour
     {
         if (showBanner)
         {
+            if (adaptiveSize)
+            {
+                adSize = AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth);
+            }
+            else
+            {
+                adSize = new AdSize((int)size.x, (int)size.y);
+            }
             if (manualRefreshBanner == false)
             {
+                AdsUltsMono.Instance.DestroyBanner();
                 AdMobManager.instance.onBannerLoaded += OnBannerLoad;
                 AdMobManager.instance.InstanceBannerAdWrapper.OnChangeEvent.AddListener(OnChangeEvent);
-                if (adaptiveSize)
-                {
-                    adSize = AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth);
-                }
-                else
-                {
-                    adSize = new AdSize((int)size.x, (int)size.y);
-                }
+                
                 AdMobManager.instance.InstanceBannerAdWrapper.LoadAd((int)placementId, collapsible, adPosition, adSize);
             }
             else
             {
                 if (AdsConfigWraper.IsUsingManualRefreshBanner() == true)
                 {
-                    AdsUltsMono.Instance.ShowManualRefreshBanner(placementId, new BannerTransform(Omnilatent.AdsMediation.AdPosition.Bottom));
+                    if (AdsManager.Instance.DoNotShowAds(placementId) == false)
+                    {
+                        AdsUltsMono.Instance.ShowManualRefreshBanner(placementId, new BannerTransform(Omnilatent.AdsMediation.AdPosition.Bottom) { adSizeData = adSize });
+                        Debug.Log("Show Manual Banner");
+                    }
+                    
+
                 }
                 else
                 {
                     AdMobManager.instance.InstanceBannerAdWrapper.LoadAd((int)placementId, collapsible, adPosition, adSize);
+                    Debug.Log("Show Auto Banner");
                 }
             }
             

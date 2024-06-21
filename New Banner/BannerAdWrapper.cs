@@ -33,6 +33,7 @@ public class BannerAdFocus : MonoBehaviour
             BannerItem.QueueMainThreadExecution(() =>
             {
                 AdMobManager.instance.InstanceBannerAdWrapper.ShowBannerFocus();
+                AdsUltsMono.Instance.ShowExistingBanner();
             });
         }
         else
@@ -40,6 +41,7 @@ public class BannerAdFocus : MonoBehaviour
             BannerItem.QueueMainThreadExecution(() =>
             {
                 AdMobManager.instance.InstanceBannerAdWrapper.HideBannerFocus();
+                AdsUltsMono.Instance.HideBanner();
             });
         };
     }
@@ -144,13 +146,13 @@ public class BannerAdWrapper
         }
     }
 
-    internal void ShowBannerFocus()
+    public void ShowBannerFocus()
     {
         keyShowBanner[focus_condition] = true;
         OnChangeEvent.Invoke();
     }
 
-    internal void HideBannerFocus()
+    public void HideBannerFocus()
     {
         keyShowBanner[focus_condition] = false;
         DestroyAll();
