@@ -18,6 +18,8 @@ public class AdBannerGameObject : MonoBehaviour
     public bool collapsible;
     [ShowIf("showBanner")]
     public bool adaptiveSize = true;
+    [ShowIf("showBanner")]
+    public bool manualRefreshBanner = false;
     [HideIf("@this.adaptiveSize || !this.showBanner")]
     public Vector2 size;
     private AdSize adSize;
@@ -26,24 +28,41 @@ public class AdBannerGameObject : MonoBehaviour
     {
         if (showBanner)
         {
-            AdMobManager.instance.onBannerLoaded += OnBannerLoad;
-            AdMobManager.instance.InstanceBannerAdWrapper.OnChangeEvent.AddListener(OnChangeEvent);
-            if (adaptiveSize)
+            if (manualRefreshBanner == false)
             {
-                adSize = AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth);
+                AdMobManager.instance.onBannerLoaded += OnBannerLoad;
+                AdMobManager.instance.InstanceBannerAdWrapper.OnChangeEvent.AddListener(OnChangeEvent);
+                if (adaptiveSize)
+                {
+                    adSize = AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(AdSize.FullWidth);
+                }
+                else
+                {
+                    adSize = new AdSize((int)size.x, (int)size.y);
+                }
+                AdMobManager.instance.InstanceBannerAdWrapper.LoadAd((int)placementId, collapsible, adPosition, adSize);
             }
             else
             {
-                adSize = new AdSize((int)size.x, (int)size.y);
+                if (AdsConfigWraper.IsUsingManualRefreshBanner() == true)
+                {
+                    AdsUltsMono.Instance.ShowManualRefreshBanner(placementId, new BannerTransform(Omnilatent.AdsMediation.AdPosition.Bottom));
+                }
+                else
+                {
+                    AdMobManager.instance.InstanceBannerAdWrapper.LoadAd((int)placementId, collapsible, adPosition, adSize);
+                }
             }
-            AdMobManager.instance.InstanceBannerAdWrapper.LoadAd((int)placementId, collapsible, adPosition, adSize);
-            return;
+            
+            
         }
         else
         {
             placementId = -1;
             AdMobManager.instance.InstanceBannerAdWrapper.HideBannerObj();
+            AdsUltsMono.Instance.HideBanner();
         }
+        
     }
 
     private void OnChangeEvent()
