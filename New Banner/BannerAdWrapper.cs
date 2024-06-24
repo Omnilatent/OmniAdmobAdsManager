@@ -32,16 +32,16 @@ public class BannerAdFocus : MonoBehaviour
         {
             BannerItem.QueueMainThreadExecution(() =>
             {
-                AdMobManager.instance.InstanceBannerAdWrapper.ShowBannerFocus();
-                AdsUltsMono.Instance.ShowExistingBanner();
+                /*AdMobManager.instance.InstanceBannerAdWrapper.ShowBannerFocus();
+                AdsUltsMono.Instance.ShowExistingBanner();*/
             });
         }
         else
         {
             BannerItem.QueueMainThreadExecution(() =>
             {
-                AdMobManager.instance.InstanceBannerAdWrapper.HideBannerFocus();
-                AdsUltsMono.Instance.HideBanner();
+                /*AdMobManager.instance.InstanceBannerAdWrapper.HideBannerFocus();
+                AdsUltsMono.Instance.HideBanner();*/
             });
         };
     }
@@ -111,6 +111,7 @@ public class BannerAdWrapper
             bannerAdItems.Add(placementId, banner);
         }
         bannerAdItems[placementId].RequestAd();
+        Debug.Log("Load Ad" + placementId);
     }
 
     public void ShowBanner(AdPlacement.Type placementId)
@@ -142,8 +143,10 @@ public class BannerAdWrapper
     {
         foreach (var e in bannerAdItems)
         {
+            Debug.Log(e.Key);
             e.Value.Destroy();
         }
+
     }
 
     public void ShowBannerFocus()

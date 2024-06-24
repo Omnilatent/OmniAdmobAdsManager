@@ -51,10 +51,9 @@ public class AdBannerGameObject : MonoBehaviour
                     if (AdsManager.Instance.DoNotShowAds(placementId) == false)
                     {
                         AdsUltsMono.Instance.ShowManualRefreshBanner(placementId, new BannerTransform(Omnilatent.AdsMediation.AdPosition.Bottom) { adSizeData = adSize });
+                        AdMobManager.instance.InstanceBannerAdWrapper.HideBannerFocus();
                         Debug.Log("Show Manual Banner");
                     }
-                    
-
                 }
                 else
                 {
