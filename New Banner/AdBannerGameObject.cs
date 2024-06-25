@@ -36,42 +36,57 @@ public class AdBannerGameObject : MonoBehaviour
             {
                 adSize = new AdSize((int)size.x, (int)size.y);
             }
+            // - Banner Type check
             if (manualRefreshBanner == false)
             {
-                AdsUltsMono.Instance.DestroyBanner();
-                AdMobManager.instance.onBannerLoaded += OnBannerLoad;
-                AdMobManager.instance.InstanceBannerAdWrapper.OnChangeEvent.AddListener(OnChangeEvent);
-                
-                AdMobManager.instance.InstanceBannerAdWrapper.LoadAd((int)placementId, collapsible, adPosition, adSize);
+                ShowNormalBanner();
             }
             else
             {
                 if (AdsConfigWraper.IsUsingManualRefreshBanner() == true)
                 {
-                    if (AdsManager.Instance.DoNotShowAds(placementId) == false)
-                    {
-                        AdsUltsMono.Instance.ShowManualRefreshBanner(placementId, new BannerTransform(Omnilatent.AdsMediation.AdPosition.Bottom) { adSizeData = adSize });
-                        AdMobManager.instance.InstanceBannerAdWrapper.HideBannerFocus();
-                        Debug.Log("Show Manual Banner");
-                    }
+                    ShowManualRefreshBanner();
                 }
                 else
                 {
-                    AdMobManager.instance.InstanceBannerAdWrapper.LoadAd((int)placementId, collapsible, adPosition, adSize);
+                    ShowNormalBanner();
                     Debug.Log("Show Auto Banner");
                 }
             }
-            
-            
         }
         else
         {
-            placementId = -1;
-            AdMobManager.instance.InstanceBannerAdWrapper.HideBannerObj();
-            AdsUltsMono.Instance.HideBanner();
+            StopShowBanner();
         }
         
     }
+
+    void ShowNormalBanner()
+    {
+        AdsUltsMono.Instance.DestroyBanner();
+        AdMobManager.instance.onBannerLoaded += OnBannerLoad;
+        AdMobManager.instance.InstanceBannerAdWrapper.OnChangeEvent.AddListener(OnChangeEvent);
+
+        AdMobManager.instance.InstanceBannerAdWrapper.LoadAd((int)placementId, collapsible, adPosition, adSize);
+    }
+    void ShowManualRefreshBanner()
+    {
+        if (AdsManager.Instance.DoNotShowAds(placementId) == false)
+        {
+            AdsUltsMono.Instance.ShowManualRefreshBanner(placementId, new BannerTransform(Omnilatent.AdsMediation.AdPosition.Bottom) { adSizeData = adSize });
+            AdMobManager.instance.InstanceBannerAdWrapper.HideBannerObj();
+            showBanner = false;
+            placementId = -1;
+            Debug.Log("Show Manual Banner");
+        }
+    }
+    void StopShowBanner()
+    {
+        placementId = -1;
+        AdMobManager.instance.InstanceBannerAdWrapper.HideBannerObj();
+        AdsUltsMono.Instance.DestroyBanner();
+    }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.D))
