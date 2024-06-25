@@ -146,7 +146,6 @@ public class BannerAdWrapper
             Debug.Log(e.Key);
             e.Value.Destroy();
         }
-
     }
 
     public void ShowBannerFocus()
@@ -159,7 +158,7 @@ public class BannerAdWrapper
     {
         keyShowBanner[focus_condition] = false;
         DestroyAll();
-        OnChangeEvent.Invoke();
+        //OnChangeEvent.Invoke();
     }
 
     internal void ShowBannerObj()
@@ -283,7 +282,7 @@ public class BannerItem
         wrapper.manager.onBannerRequested?.Invoke(placementId);
         _cacheBannerView.LoadAd(adRequest);
 #if UNITY_EDITOR
-        FakeEventBanner();
+        //FakeEventBanner();
 #endif
     }
 
@@ -378,6 +377,12 @@ public class BannerItem
         {
             _bannerView.Destroy();
             _bannerView = null;
+            IsShowing = false;
+        }
+        if (_cacheBannerView !=null)
+        {
+            _cacheBannerView.Destroy();
+            _cacheBannerView = null;
             IsShowing = false;
         }
     }

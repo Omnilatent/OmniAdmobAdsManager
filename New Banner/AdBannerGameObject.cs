@@ -72,7 +72,14 @@ public class AdBannerGameObject : MonoBehaviour
         }
         
     }
-
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            Debug.Log("Destroy Banner");
+            AdMobManager.instance.InstanceBannerAdWrapper.HideBannerFocus();
+        }
+    }
     private void OnChangeEvent()
     {
         AdMobManager.instance.InstanceBannerAdWrapper.ShowBanner((int)placementId);
