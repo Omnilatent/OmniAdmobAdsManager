@@ -123,6 +123,7 @@ public class BannerAdWrapper
         foreach (var e in bannerAdItems)
         {
             e.Value.IsShowing = e.Key.Equals(placementId);
+            Debug.Log("Show Banner " + placementId);
         }
     }
 
@@ -158,7 +159,7 @@ public class BannerAdWrapper
     {
         keyShowBanner[focus_condition] = false;
         DestroyAll();
-        //OnChangeEvent.Invoke();
+        OnChangeEvent.Invoke();
     }
 
     internal void ShowBannerObj()

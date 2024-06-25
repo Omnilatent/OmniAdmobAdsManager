@@ -24,6 +24,7 @@ public class AdBannerGameObject : MonoBehaviour
     public Vector2 size;
     private AdSize adSize;
 
+
     void Start()
     {
         if (showBanner)
@@ -66,8 +67,8 @@ public class AdBannerGameObject : MonoBehaviour
         AdsUltsMono.Instance.DestroyBanner();
         AdMobManager.instance.onBannerLoaded += OnBannerLoad;
         AdMobManager.instance.InstanceBannerAdWrapper.OnChangeEvent.AddListener(OnChangeEvent);
-
         AdMobManager.instance.InstanceBannerAdWrapper.LoadAd((int)placementId, collapsible, adPosition, adSize);
+        manualRefreshBanner = false;
     }
     void ShowManualRefreshBanner()
     {
@@ -111,7 +112,13 @@ public class AdBannerGameObject : MonoBehaviour
     private void OnDestroy()
     {
         if (showBanner)
-            AdMobManager.instance.onBannerLoaded -= OnBannerLoad;
+        {
+            if (manualRefreshBanner == false)
+            {
+                AdMobManager.instance.onBannerLoaded -= OnBannerLoad;
+            }
+           
+        }
         else
             AdMobManager.instance.InstanceBannerAdWrapper.ShowBannerObj();
     }
